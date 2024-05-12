@@ -1,0 +1,143 @@
+<div class="flex flex-row justify-center mt-10">
+  <mat-card class="w-[95%]">
+    <div class="flex flex-row justify-between">
+      <mat-card-header>
+        <mat-card-title>Stock Management</mat-card-title>
+        <mat-card-subtitle>{{ dataSource.data.length }} รายการ</mat-card-subtitle>
+      </mat-card-header>
+      <!-- <button
+        [routerLink]="['/stock/create']"
+        mat-fab
+        class="!w-10 !h-10 add-btn"
+        color="primary"
+        style="margin-right: 20px"
+        >
+        <mat-icon style="font-size: 25px">add</mat-icon>
+      </button> -->
+      <button mat-raised-button color="primary" class="mt-4 mr-4" (click)="onClickAddProduct()">
+        Add Product
+      </button>
+
+    </div>
+    <mat-card-content>
+      <mat-form-field class="w-full">
+        <input
+          class="w-100"
+          matInput
+          type="text"
+          placeholder="ค้นหา"
+          [(ngModel)]="searchValue"
+          (keyup)="doFilter($event)"
+          />
+        @if (searchValue) {
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Clear"
+            (click)="clearSearch()"
+            >
+            <mat-icon class="!text-sm">close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      <table
+        mat-table
+        #table
+        [dataSource]="dataSource"
+        class="w-full table-hovor"
+        matSort
+        matSortActive="productID"
+        matSortDirection="desc"
+        >
+        <!-- Id -->
+        <ng-container matColumnDef="productID">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>เลขที่</th>
+          <td mat-cell *matCellDef="let row">{{ row.product_id }}</td>
+        </ng-container>
+
+        <!-- Image -->
+        <ng-container matColumnDef="productPicture">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center">
+            รูป
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <img
+                [src]="row.product_picture != 'noimg.jpg' ? 
+                      imageUrl + row.product_picture 
+                      : 
+                      'assets/images/nglogo.jpg'"
+              height="50px"
+              width="50px"
+              class="rounded-full mat-image-cell"
+              />
+          </td>
+        </ng-container>
+
+        <!-- Name -->
+        <ng-container matColumnDef="productName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>ชื่อ</th>
+          <td mat-cell *matCellDef="let row">{{ row.product_name }}</td>
+        </ng-container>
+
+        <!-- Price -->
+        <ng-container matColumnDef="unitPrice">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>ราคา</th>
+          <td mat-cell *matCellDef="let row">
+            <span style="margin-right: 16px">
+              ฿ {{ row.unit_price | number : "1.2-2" }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Stock -->
+        <ng-container matColumnDef="unitInStock">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>จำนวน</th>
+          <td mat-cell *matCellDef="let row">
+            <span style="margin-right: 16px">
+              {{ row.unit_in_stock | number }} pcs.
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center">
+            จัดการ
+          </th>
+          <td mat-cell *matCellDef="let row" style="text-align: center">
+            <button
+              [routerLink]="['/stock/edit/' + row.product_id]"
+              mat-raised-button
+              class="edit-btn"
+              >
+              แก้ไข
+            </button> &nbsp;
+            <button
+              (click)="onClickDelete(row.product_id)"
+              mat-raised-button
+              class="delete-btn"
+              >
+              ลบ
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      @if (dataSource.data.length === 0) {
+        <div
+          class="flex justify-center mt-5 mat-display-3"
+          >
+          No records found
+        </div>
+      }
+
+      <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 15, 25, 100]">
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>
+

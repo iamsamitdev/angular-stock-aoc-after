@@ -1,0 +1,3358 @@
+================================
+🛴 .NET 8 with Angular 17  🛴
+================================
+✈ DAY 1
+-------------------------------------------------------
+1: การเตรียมเครื่องมือบน Mac และ Windows
+2: แนะนำ .NET Core 8
+3: สร้าง .NET 8 Rest API
+-------------------------------------------------------
+🛠1. การเตรียมเครื่องมือและความพร้อม
+💻 .NET SDK 8.x
+---
+dotnet --version
+
+💻 Node JS 20.x and up
+---
+node -v
+npm -v
+
+💻 Angular CLI
+---
+ng version
+
+💻 Docker Desktop
+---
+docker --version
+
+💻 Git
+---
+git version
+
+💻 VSCode
+---
+code -v
+
+2: แนะนำ .NET Core 8
+---
+ตั้งแต่ .NET 6 เป็นต้นมา สามารถสร้าง API ได้ 2 approaches ด้วยกันคือ 
+
+1. controller-based APIs
+2. minimal APIs
+
+Minimal API: เหมาะสำหรับ API ขนาดเล็ก ต้องการพัฒนา quickly ต้องการโค้ดที่กระชับ
+
+Controller-based API: เหมาะสำหรับ API ขนาดใหญ่ ต้องการความยืดหยุ่นสูง ต้องการการตั้งค่าเพิ่มเติม
+
+Minimal API:
+---
+จุดเด่น:
+
+โค้ดน้อย กระชับ อ่านง่าย
+พัฒนาได้รวดเร็ว
+เหมาะสำหรับ API ขนาดเล็ก
+สนับสนุนการใช้ lambda expression
+รองรับ async/await โดยตรง
+
+จุดด้อย:
+
+ตัวเลือกการตั้งค่ามีจำกัด
+ไม่เหมาะกับ API ขนาดใหญ่
+การจัดการ routing ซับซ้อน
+
+Controller-based API:
+---
+จุดเด่น:
+
+มีโครงสร้างชัดเจน
+ตัวเลือกการตั้งค่าหลากหลาย
+เหมาะกับ API ขนาดใหญ่
+รองรับการทดสอบง่าย
+รองรับ middleware
+จุดด้อย:
+
+โค้ดยาว ยุ่งยาก
+พัฒนาได้ช้ากว่า Minimal API
+
+3: สร้าง .NET 8 Rest API
+
+🚀เริ่มต้นสร้างโปรเจ็กต์ .NET Core Web API ใหม่ใน .NET 8
+---
+Step 1: สร้างโฟลเดอร์ใหม่ในเครื่องสำหรับเก็บโปรเจ็กต์ในคอร์สอบรมนี้
+---
+mkdir DotnetCoreAngularOAC
+
+Step 2: คำสั่งสร้างโปรเจ็กต์ใหม่ในโฟลเดอร์ที่สร้าง
+---
+สร้างโปรเจ็กต์ Web APIs แบบ Controller-based APIs
+---
+dotnet new webapi --use-controllers -o ControllerAPI
+
+Step 3: เปิดเข้าใน VSCode
+---
+code ControllerAPI
+
+Step 4: รันโปรเจ็กต์
+---
+dotnet watch run
+
+💻 เรียนรู้การสร้าง REST API ด้วย .NET Web API แบบ Controller-base APIs
+---
+Step 1: ในโปรเจ็กต์ ControllerAPI ลบไฟล์ Controller/WeatherForecastController.cs
+และไฟล์ WeatherForecast.cs
+
+Step 2: สร้าง model ใน Models/User
+---
+namespace ControllerAPI.Models;
+public class User
+{
+    public int Id { get; set; }
+    public required string Username { get; set; }
+    public required string Email { get; set; }
+    public required string Fullname { get; set; }
+}
+
+
+Step 3: สร้าง UserController ใน Controllers
+---
+using Microsoft.AspNetCore.Mvc;
+using WebApi.Models;
+
+namespace ControllerAPI.Controllers;
+
+[ApiController]
+[Route("api/[controller]")] // api/User
+public class UserController : ControllerBase
+{
+    // mock data for users
+    private static readonly List<User> _users = new List<User>
+    {
+        new User { 
+            Id = 1, 
+            Username = "john", 
+            Email = "john@email.com", 
+            Fullname = "John Doe"
+        },
+        new User { 
+            Id = 2, 
+            Username = "samit", 
+            Email = "samit@email.com", 
+            Fullname = "Samit Koyom"
+        },
+    };
+
+    // GET: api/User
+    [HttpGet]
+    public ActionResult<IEnumerable<User>> GetUsers()
+    {
+        // IEnumerable คืออะไร
+        // IEnumerable เป็น interface ใน .NET Framework ที่ใช้แทน collection ของ object
+        // interface นี้กำหนด method เพียงตัวเดียวคือ GetEnumerator()
+        // GetEnumerator() : method นี้ return enumerator
+        // enumerator : object ที่ใช้วนซ้ำผ่าน collection
+        // ในที่นี้เราใช้ IEnumerable ในการ return ข้อมูลของ users
+
+        // วนซ้ำผ่าน collection โดยใช้ foreach
+        // foreach (var user in _users)
+        // {
+        //     Console.WriteLine($"{user.Id} - {user.Username}");
+        // }
+
+        return Ok(_users);
+    }
+
+    // GET: api/User/{id}
+    [HttpGet("{id}")]
+    public ActionResult<User> GetUser(int id)
+    {
+        var user = _users.Find(u => u.Id == id); // find user by id
+        if (user == null)
+        {
+            return NotFound();
+        }
+        return Ok(user);
+    }
+
+
+    // POST: api/User
+    [HttpPost]
+    public ActionResult<User> CreateUser([FromBody] User user)
+    {
+        _users.Add(user);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+    }
+
+    // PUT: api/User/{id}
+    [HttpPut("{id}")]
+    public IActionResult UpdateUser(int id, [FromBody] User user)
+    {
+        // Validate user id
+        if (id != user.Id)
+        {
+            return BadRequest();
+        }
+
+        // Find existing user
+        var existingUser = _users.Find(u => u.Id == id);
+        if (existingUser == null)
+        {
+            return NotFound();
+        }
+
+        // Update user
+        existingUser.Username = user.Username;
+        existingUser.Email = user.Email;
+        existingUser.Fullname = user.Fullname;
+
+        // Return updated user
+        return Ok(existingUser);
+    }
+
+    // DELETE: api/User/2
+    [HttpDelete("{id}")]
+    public ActionResult DeleteUser(int id)
+    {
+        // Find existing user
+        var user = _users.Find(u => u.Id == id);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        // Remove user from list
+        _users.Remove(user);
+        return NoContent();
+    }
+
+
+}
+
+-------------------------------------------------------
+✈ DAY 2
+4:  Entity Framework Core ใน .NET 8 
+5: .NET 8 Rest API CRUD with EFCore
+-------------------------------------------------------
+🚀 WORKSHOP: StockAPI with EF8 MSSQL
+
+Step 1: สร้างโปรเจ็กต์ WebAPI
+---
+dotnet new webapi --use-controllers -o StockAPI
+
+Step 2: เปิดเข้า VSCode
+---
+code StockAPI
+
+"การใช้งาน EFCore แบบ Database first"
+
+Step 3: เตรียมฐานข้อมูล MS SQL Server
+---
+สร้างฐานข้อมูลใหม่ ชื่อ "StockDB"
+---
+CREATE DATABASE StockDB;
+
+Step 4: สร้างตาราง "Category" และ "Product"
+---
+ตาราง "Category"
+----
+USE [StockDB]
+
+GO
+
+CREATE TABLE [dbo].[Category](
+	[CategoryID] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryName] [varchar](64) NULL,
+	[CategoryStatus] [int] NULL,
+ CONSTRAINT [PK_Category] PRIMARY KEY CLUSTERED 
+(
+	[CategoryID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+---
+เพิ่มข้อมูลในตาราง "Category"
+---
+INSERT INTO dbo.Category (
+    CategoryName,
+    CategoryStatus
+)
+
+VALUES
+(
+    'Mobile',
+    1
+),
+(
+    'Tablet',
+    1
+),
+(
+    'Smart Watch',
+    1
+),
+(
+    'Laptop',
+    1
+);
+
+---
+ตาราง  "Product"
+---
+USE [StockDB]
+
+GO
+
+CREATE TABLE [dbo].[Product](
+	[ProductID] [int] IDENTITY(1,1) NOT NULL,
+	[ProductName] [varchar](128) NULL,
+	[UnitPrice] [decimal](18, 2) NULL,
+	[UnitInStock] [int] NULL,
+	[ProductPicture] [varchar](256) NULL,
+	[CategoryID] [int] NULL,
+	[CreatedDate] [datetime] NULL,
+	[ModifiedDate] [datetime] NULL,
+ CONSTRAINT [PK_Product] PRIMARY KEY CLUSTERED 
+(
+	[ProductID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+---
+เพิ่มข้อมูลในตาราง "Product"
+---
+INSERT INTO dbo.Product (
+    ProductName,
+    UnitPrice,
+    UnitInStock,
+    ProductPicture,
+    CategoryID,
+    CreatedDate,
+    ModifiedDate
+)
+
+VALUES
+(
+    'iPhone 13 Pro Max',
+    55000,
+    3,
+    'https://www.mxphone.com/wp-content/uploads/2021/04/41117-79579-210401-iPhone12ProMax-xl-1200x675.jpg',
+    1,
+    '2021-11-22T00:00:00',
+    '2021-11-22T00:00:00'
+),
+(
+    'iPad Pro 2021',
+    18500,
+    10,
+    'https://cdn.siamphone.com/spec/apple/images/ipad_pro_12.9%E2%80%91inch/com_1.jpg',
+    2,
+    '2021-11-20T00:00:00',
+    '2021-11-20T00:00:00'
+),
+(
+    'Airpods Pro',
+    12500,
+    5,
+    'https://www.avtechguide.com/wp-content/uploads/2020/11/leaked-apple-airpods-pro-generation2-info_01-800x445.jpg',
+    3,
+    '2021-11-10T10:30:00',
+    '2021-11-12T10:30:00'
+),
+(
+    'Macbook Pro M1',
+    45000,
+    10,
+    'https://cdn.mos.cms.futurecdn.net/iYCQTPgBSdDmkYESfPkunh.jpg',
+    4,
+    '2021-11-15T10:30:00',
+    '2021-11-15T10:30:00'
+);
+
+Step 5: Install NuGet Packages for EF8 and MSSQL Server
+---
+dotnet add package Microsoft.EntityFrameworkCore --version 8.0.0
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 8.0.0
+dotnet add package Microsoft.EntityFrameworkCore.Relational --version 8.0.0
+
+Step 6: ติดตั้งชุดคำสั่ง dotnet-ef cli
+---
+ตรวจเช็คว่ามีการติดตั้ง ไว้หรือยัง
+dotnet ef --version
+
+หากยังไม่พบให้ทำการติดตั้งก่อน
+dotnet tool install --global dotnet-ef
+
+อัพเดทเวอร์ชันล่าสุด
+dotnet tool update --global dotnet-ef
+
+Step 7: การสร้าง Scaffold-DbContext (Reverse engineer)
+---
+SQL Server Authen
+---
+dotnet ef dbcontext scaffold ^"Server=SAMITZ50;^
+Initial Catalog=StockDB;^
+Persist Security Info=False;^
+User ID=sa;^
+Password=377040;^
+MultipleActiveResultSets=True;^
+Encrypt=True;^
+TrustServerCertificate=True;^
+Connection Timeout=30;^" ^
+Microsoft.EntityFrameworkCore.SqlServer ^
+--output-dir "Models" ^
+--context ApplicationDbContext ^
+--use-database-names ^
+--no-onconfiguring ^
+--no-pluralize ^
+--force
+
+Windows Authen
+---
+dotnet ef dbcontext scaffold ^"Server=SAMITZ50\SQLEXPRESS;^
+Database=StockDB;^
+TrustServerCertificate=True;^
+Trusted_Connection=True;^" ^
+Microsoft.EntityFrameworkCore.SqlServer ^
+--output-dir Models ^
+--context ApplicationDbContext ^
+--use-database-names ^
+--no-onconfiguring ^
+--force
+
+Step 8: แก้ไขไฟล์ appsettings.json เพิ่ม connection string สำหรับเชื่อมต่อฐานข้อมูล
+---
+    "DefaultConnection": "Data Source=SAMITPCGENIUS\\SQLEXPRESS;Initial Catalog=dotnetinvdb;User Id=sa;Password=377040;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+
+Step 9: ติดตั้ง Package สำหรับทำ Authentication ด้วย JWT
+---
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.0
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.0
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.0
+
+Step 10: เพิ่ม JWT ที่ไฟล์ appsettings.json
+---
+"JWT": {  
+    "ValidAudience": "*",  
+    "ValidIssuer": "*",  
+    "Secret": "ByYM000OLlMQG6VVVp1OH7Xzyr7gHuw1qvUC5dcGt3SNM"  
+  },
+
+Step 11: เพิ่ม Config ของ JWT ในไฟล์ Program.cs
+---
+.
+.
+// Adding Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// Adding Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+// Adding Jwt Bearer
+.AddJwtBearer(options  => {
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration.GetSection("JWT:ValidAudience").Value!,
+        ValidIssuer = builder.Configuration.GetSection("JWT:ValidIssuer").Value!,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Secret").Value!))
+    };
+});
+.
+.
+builder.Services.AddSwaggerGen(
+    options =>
+    {
+        options.SupportNonNullableReferenceTypes();
+        options.SwaggerDoc("v1", new() { Title = "StockAPI", Version = "v1" });
+
+        options.AddSecurityDefinition("Bearer",  new OpenApiSecurityScheme()
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            BearerFormat= "JWT",
+            In = ParameterLocation.Header,
+            Description = "JWT Authorization header using the Bearer scheme."
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        });
+    }
+);
+
+.
+.
+// Add Authentication
+app.UseAuthentication();
+
+Step 12: แก้ไขไฟล์ Data/ApplicationDbContext.cs
+---
+ public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+}
+
+
+Step 13: เพิ่มไฟล์ Migration สำหรับ Auth
+---
+dotnet ef migrations add auth --context ApplicationDbContext
+
+# หากต้องการลบ Migration
+-
+dotnet ef migrations remove
+
+Step 14: ทำการ Migrate ตัว Migration ให้เป็นฐานข้อมูล
+---
+dotnet ef database update
+
+# หากต้องการ rollback การ Migrate
+-
+dotnet ef database update 0
+
+Step 15: สร้าง Model RegisterModel.cs
+---
+using System.ComponentModel.DataAnnotations;
+
+namespace StockAPI.Models;
+
+public class RegisterModel
+{
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, ErrorMessage = "Username is too long")]
+    [MinLength(3, ErrorMessage = "Username is too short")]
+    public required string Username { get; set; }
+    
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Email is not valid")]
+    public required string Email { get; set; }
+    
+    [Required(ErrorMessage = "Password is required")]
+    public required string Password { get; set; }
+}
+
+Step 16: สร้าง Model LoginModel.cs
+---
+using System.ComponentModel.DataAnnotations;
+
+namespace StockAPI.Models;
+public class LoginModel
+{
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, ErrorMessage = "Username is too long")]
+    [MinLength(3, ErrorMessage = "Username is too short")]
+    public string? Username { get; set; }
+    
+    [Required(ErrorMessage = "Password is required")]
+    public string? Password { get; set; }
+}
+
+Step 17: สร้าง Model UserRoles.cs
+---
+namespace StockAPI.Models;
+
+public class UserRolesModel
+{
+    public const string Admin = "Admin";
+    public const string Manager = "Manager";
+    public const string User = "User";
+}
+
+Step 18: สร้างไฟล์ ResponseModel.cs ไว้สำหรับแสดงผลลัพธ์จาก API
+---
+namespace StockAPI.Models;
+
+public class ResponseModel
+{
+    public string? Status { get; set; }
+    public string? Message { get; set; }
+}
+
+Step 19: สร้าง Controller ชื่อ "AuthenticateController"
+---
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using StockAPI.Models;
+
+namespace StockAPI.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthenticateController: ControllerBase
+{
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IConfiguration _configuration;
+
+    // Constructor
+    public AuthenticateController(
+        UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, 
+        IConfiguration configuration)
+    {
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _configuration = configuration;
+    }
+
+    // Register for User
+    // Post api/authenticate/register-user
+    [HttpPost]
+    [Route("register-user")]
+    public async Task<ActionResult> RegisterUser([FromBody] RegisterModel model)
+    {
+        // เช็คว่า username ซ้ำหรือไม่
+        var userExists = await _userManager.FindByNameAsync(model.Username);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User already exists!"
+                }
+            );
+        }
+
+        // เช็คว่า email ซ้ำหรือไม่
+        userExists = await _userManager.FindByEmailAsync(model.Email);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "Email already exists!"
+                }
+            );
+        }
+
+        // สร้าง User
+        IdentityUser user = new()
+        {
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.Username
+        };
+
+        // สร้าง User ในระบบ
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        // ถ้าสร้างไม่สำเร็จ
+        if(!result.Succeeded)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User creation failed! Please check user details and try again."
+                }
+            );
+        }
+
+        // กำหนด Roles Admin, Manager, User
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.Admin))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.Admin));
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.Manager))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.Manager));
+        }
+
+        if (await _roleManager.RoleExistsAsync(UserRolesModel.User))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.User));
+            await _userManager.AddToRoleAsync(user, UserRolesModel.User);
+        }
+
+        return Ok(new ResponseModel
+        {
+            Status = "Success",
+            Message = "User registered successfully"
+        });
+    }
+
+
+    // Register for Manager
+    // Post api/authenticate/register-manger
+    [HttpPost]
+    [Route("register-manger")]
+    public async Task<ActionResult> RegisterManager([FromBody] RegisterModel model)
+    {
+        // เช็คว่า username ซ้ำหรือไม่
+        var userExists = await _userManager.FindByNameAsync(model.Username);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User already exists!"
+                }
+            );
+        }
+
+        // เช็คว่า email ซ้ำหรือไม่
+        userExists = await _userManager.FindByEmailAsync(model.Email);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "Email already exists!"
+                }
+            );
+        }
+
+        // สร้าง User
+        IdentityUser user = new()
+        {
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.Username
+        };
+
+        // สร้าง User ในระบบ
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        // ถ้าสร้างไม่สำเร็จ
+        if(!result.Succeeded)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User creation failed! Please check user details and try again."
+                }
+            );
+        }
+
+        // กำหนด Roles Admin, Manager, User
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.Admin)){
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.Admin));
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.User)){
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.User));
+        }
+
+        if (await _roleManager.RoleExistsAsync(UserRolesModel.Manager)){
+            await _userManager.AddToRoleAsync(user, UserRolesModel.Manager);
+        }
+
+        return Ok(new ResponseModel
+        {
+            Status = "Success",
+            Message = "User registered successfully"
+        });
+    }
+
+    // Register for Admin
+    // Post api/authenticate/register-manger
+    [HttpPost]
+    [Route("register-admin")]
+    public async Task<ActionResult> RegisterAdmin([FromBody] RegisterModel model)
+    {
+        // เช็คว่า username ซ้ำหรือไม่
+        var userExists = await _userManager.FindByNameAsync(model.Username);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User already exists!"
+                }
+            );
+        }
+
+        // เช็คว่า email ซ้ำหรือไม่
+        userExists = await _userManager.FindByEmailAsync(model.Email);
+        if (userExists != null)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "Email already exists!"
+                }
+            );
+        }
+
+        // สร้าง User
+        IdentityUser user = new()
+        {
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.Username
+        };
+
+        // สร้าง User ในระบบ
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        // ถ้าสร้างไม่สำเร็จ
+        if(!result.Succeeded)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ResponseModel
+                {
+                    Status = "Error",
+                    Message = "User creation failed! Please check user details and try again."
+                }
+            );
+        }
+
+        // กำหนด Roles Admin, Manager, User
+        if (await _roleManager.RoleExistsAsync(UserRolesModel.Admin)){
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.Admin));
+            await _userManager.AddToRoleAsync(user, UserRolesModel.Admin);
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.User)){
+            await _roleManager.CreateAsync(new IdentityRole(UserRolesModel.User));
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRolesModel.Manager)){
+            await _userManager.AddToRoleAsync(user, UserRolesModel.Manager);
+        }
+
+        return Ok(new ResponseModel
+        {
+            Status = "Success",
+            Message = "User registered successfully"
+        });
+    }
+
+    // Login for User
+    // Post api/authenticate/login-user
+    [HttpPost("login")]
+    public async Task<ActionResult> Login([FromBody] LoginModel model)
+    {
+
+        var user = await _userManager.FindByNameAsync(model.Username!);
+
+        // ถ้า login สำเร็จ
+        if(user != null && await _userManager.CheckPasswordAsync(user, model.Password!))
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            var token = GetToken(authClaims);
+
+            return Ok(new 
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
+            });
+        }
+
+        // ถ้า login ไม่สำเร็จ
+        return Unauthorized();
+    }
+
+    // ฟังก์ชันสร้าง Token
+    private JwtSecurityToken GetToken(List<Claim> authClaims)
+    {
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
+
+        var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"); // Windows time zone ID
+
+        // Get the current time in Bangkok time zone
+        var currentTime = TimeZoneInfo.ConvertTime(DateTime.UtcNow, timeZoneInfo);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["JWT:ValidIssuer"],
+            audience: _configuration["JWT:ValidAudience"],
+            expires: currentTime.AddHours(3),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+        );
+
+        return token;
+    }
+}
+
+-------------------------------------------------------
+✈ DAY 3
+6:  Entity Framework Identity ใน .NET 8
+-------------------------------------------------------
+---
+Use Raw SQL Query
+---
+// var product = _context.Product.FromSqlRaw(
+//     "SELECT p.ProductID, p.ProductName, p.UnitPrice, p.UnitInStock, p.CategoryID, p.ProductPicture, p.CreatedDate, p.ModifiedDate, c.CategoryName FROM Product p INNER JOIN Category c ON p.CategoryID = c.CategoryID WHERE p.ProductID = {0}",
+// id).FirstOrDefault();
+
+---
+Create View in SQL Server
+---
+CREATE VIEW vw_ProductDetails
+AS
+SELECT 
+    p.ProductID,
+    p.ProductName,
+    p.UnitPrice,
+    p.UnitInStock,
+    p.CategoryID,
+    p.ProductPicture,
+    p.CreatedDate,
+    p.ModifiedDate,
+    c.CategoryName
+FROM 
+    Product p
+JOIN 
+    Category c ON p.CategoryID = c.CategoryID;
+
+---
+Use View in EFCore
+---
+var product = _context.ProductDetails.FromSqlRaw("SELECT * FROM vw_ProductDetails WHERE ProductID = {0}", id).FirstOrDefault();
+
+// Read from views in database
+using (var command = _context.Database.GetDbConnection().CreateCommand())
+{
+    command.CommandText = "SELECT * FROM vw_ProductDetails WHERE ProductID = @productId";
+    command.Parameters.Add(new SqlParameter("@productId", id));
+    _context.Database.OpenConnection();
+    
+    using (var result = command.ExecuteReader())
+    {
+        var list = new List<dynamic>();
+        while (result.Read())
+        {
+            dynamic item = new ExpandoObject();
+            for (int i = 0; i < result.FieldCount; i++)
+            {
+                ((IDictionary<string, object>)item).Add(result.GetName(i), result[i]);
+            }
+            list.Add(item);
+        }
+        return Ok(list);
+    }
+}
+
+---
+Create Stored Procedure
+---
+CREATE PROCEDURE GetProductDetails
+    @ProductID INT
+AS
+BEGIN
+    SELECT 
+        p.ProductID,
+        p.ProductName,
+        p.UnitPrice,
+        p.UnitInStock,
+        p.CategoryID,
+        p.ProductPicture,
+        p.CreatedDate,
+        p.ModifiedDate,
+        c.CategoryName
+    FROM 
+        Product p
+    JOIN 
+        Category c ON p.CategoryID = c.CategoryID
+    WHERE 
+        p.ProductID = @ProductID;
+END;
+
+---
+Use Stored Procedure
+---
+// Call Stored Procedure
+var param = new SqlParameter("@ProductID", id);
+
+var product = _context.Product
+    .FromSqlRaw("EXEC GetProductDetails @ProductID", param)
+    .AsEnumerable()
+    .FirstOrDefault();
+
+or
+
+using (var command = _context.Database.GetDbConnection().CreateCommand())
+{
+    command.CommandText = "EXEC GetProductDetails @ProductID";
+    command.CommandType = CommandType.Text;
+    command.Parameters.Add(new SqlParameter("@ProductID", id));
+
+    _context.Database.OpenConnection();
+    using (var result = command.ExecuteReader())
+    {
+        if(result.Read()){
+            var product = new {
+                ProductID = result.GetInt32(0),
+                ProductName = result.GetString(1),
+                UnitPrice = result.GetDecimal(2),
+                UnitInStock = result.GetInt32(3),
+                CategoryID = result.GetInt32(4),
+                ProductPicture = result.GetString(5),
+                CreatedDate = result.GetDateTime(6),
+                ModifiedDate = result.GetDateTime(7),
+                CategoryName = result.GetString(8)
+            };
+
+            return Ok(product);
+        }
+    }
+}
+
+---
+Build and Publish .NET Core Web API
+---
+dotnet publish -o ./Publish -c Release
+
+---
+Download Install the ASP.NET Core Module/Hosting Bundle
+---
+https://dotnet.microsoft.com/permalink/dotnetcore-current-windows-runtime-bundle-installer
+
+-------------------------------------------------------
+✈ DAY 4
+7:  พื้นฐาน Angular 17 สำหรับการสร้าง UI
+-------------------------------------------------------
+🚀 WORKSHOP: StockUI with Angular 17
+
+Step 1: สร้างโปรเจ็กต์ Angular ใหม่ แบบ no standalone component
+---
+ng new angular-stock-aoc --no-standalone
+
+? Which stylesheet format would you like to use?
+  CSS             [ https://developer.mozilla.org/docs/Web/CSS                     ] 
+> Sass (SCSS)     [ https://sass-lang.com/documentation/syntax#scss                ] 
+  Sass (Indented) [ https://sass-lang.com/documentation/syntax#the-indented-syntax ] 
+  Less            [ http://lesscss.org                                             ]
+
+? Which stylesheet format would you like to use? Sass (SCSS)     [ https://sass-lang.com/documentation/syntax#scss                ]
+? Do you want to enable Server-Side Rendering (SSR) and Static Site Generation (SSG/Prerendering)? (y/N) N
+
+Step 2: เปิดเข้าใน VSCode
+---
+code angular-stock-aoc -r
+
+Step 3: รันโปรเจ็กต์
+---
+ng serve
+
+- หากต้องการเปลี่ยน port และ host ให้ใช้คำสั่ง
+ng serve --port 4200 --host 0.0.0.0
+
+- เรียกใช้งานโปรเจ็กต์ Angular ผ่าน browser
+http://localhost:4200
+
+Step 4: Setup Material Design
+---
+ng add @angular/material
+
+ℹ Using package manager: npm
+✔ Found compatible package version: @angular/material@17.3.5.
+✔ Package information loaded.
+The package @angular/material@17.3.5 will be installed and executed.
+Would you like to proceed? (Y/n) Y
+
+✔ Packages successfully installed.
+? Choose a prebuilt theme name, or "custom" for a custom theme:
+  Indigo/Pink        [ Preview: https://material.angular.io?theme=indigo-pink ]      
+  Deep Purple/Amber  [ Preview: https://material.angular.io?theme=deeppurple-amber ] 
+  Pink/Blue Grey     [ Preview: https://material.angular.io?theme=pink-bluegrey ]    
+  Purple/Green       [ Preview: https://material.angular.io?theme=purple-green ]     
+> Custom
+
+✔ Packages successfully installed.
+? Choose a prebuilt theme name, or "custom" for a custom theme: Custom
+? Set up global Angular Material typography styles? (y/N) y
+
+✔ Packages successfully installed.
+? Choose a prebuilt theme name, or "custom" for a custom theme: Custom
+? Set up global Angular Material typography styles? Yes  
+? Include the Angular animations module? (Use arrow keys)
+> Include and enable animations
+  Include, but disable animations
+  Do not include
+
+Step 5: สร้าง material module
+---
+ng g m material --module=app
+
+# จะได้โครงสร้างไฟล์ดังนี้
+---
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── material
+│   │   │   ├── material.module.ts <-- ไฟล์นี้
+│   │   ├── app-routing.module.ts
+│   │   ├── app.component.html
+│   │   ├── app.component.scss
+│   │   ├── app.component.spec.ts
+│   │   ├── app.component.ts
+│   │   ├── app.module.ts
+│   ├── assets
+│   ├── index.html
+│   ├── main.ts
+│   ├── styles.scss
+├── .editorconfig
+├── .gitignore
+├── angular.json
+├── package.json
+├── README.md
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.spec.json
+
+Step 6: แก้ไขไฟล์ material.module.ts
+---
+import { NgModule } from '@angular/core'
+import { CommonModule } from '@angular/common'
+
+// Material Form Controls
+import { MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatNativeDateModule } from '@angular/material/core'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatRadioModule } from '@angular/material/radio'
+import { MatSelectModule } from '@angular/material/select'
+import { MatSliderModule } from '@angular/material/slider'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
+
+// Material Navigation
+import { MatMenuModule } from '@angular/material/menu'
+import { MatSidenavModule } from '@angular/material/sidenav'
+import { MatToolbarModule } from '@angular/material/toolbar'
+
+// Material Layout
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatGridListModule } from '@angular/material/grid-list'
+import { MatListModule } from '@angular/material/list'
+import { MatStepperModule } from '@angular/material/stepper'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatTreeModule } from '@angular/material/tree'
+
+// Material Buttons & Indicators
+import { MatButtonModule } from '@angular/material/button'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { MatBadgeModule } from '@angular/material/badge'
+import { MatChipsModule } from '@angular/material/chips'
+import { MatIconModule } from '@angular/material/icon'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatRippleModule } from '@angular/material/core'
+
+// Material Popups & Modals
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet'
+import { MatDialogModule } from '@angular/material/dialog'
+import { MatSnackBarModule } from '@angular/material/snack-bar'
+import { MatTooltipModule } from '@angular/material/tooltip'
+
+// Material Data tables
+import { MatPaginatorModule } from '@angular/material/paginator'
+import { MatSortModule } from '@angular/material/sort'
+import { MatTableModule } from '@angular/material/table'
+
+@NgModule({
+  declarations: [],
+  imports: [
+    CommonModule,
+    MatAutocompleteModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatSliderModule,
+    MatSlideToggleModule,
+    MatMenuModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatCardModule,
+    MatDividerModule,
+    MatExpansionModule,
+    MatGridListModule,
+    MatListModule,
+    MatStepperModule,
+    MatTabsModule,
+    MatTreeModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatBadgeModule,
+    MatChipsModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatRippleModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTableModule,
+  ],
+  exports: [
+    MatAutocompleteModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatSliderModule,
+    MatSlideToggleModule,
+    MatMenuModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatCardModule,
+    MatDividerModule,
+    MatExpansionModule,
+    MatGridListModule,
+    MatListModule,
+    MatStepperModule,
+    MatTabsModule,
+    MatTreeModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatBadgeModule,
+    MatChipsModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatRippleModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatTooltipModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTableModule,
+  ],
+})
+export class MaterialModule {}
+
+Step 7: แก้ไขไฟล์ app.module.ts
+---
+.
+.
+import { MaterialModule } from './material/material.module' <-- เพิ่มบรรทัดนี้
+.
+.
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    MaterialModule <-- เพิ่มบรรทัดนี้
+  ],
+  providers: [
+    provideAnimationsAsync()
+  ],
+  bootstrap: [AppComponent]
+})
+
+Step 8: ทดลองใช้งาน Material Design ในไฟล์ app.component.html
+---
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      <h1>Material Design</h1>
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>Material Design is a design language developed by Google in 2014. Expanding on the "card" motifs that debuted in Google Now, Material Design uses more grid-based layouts, responsive animations and transitions, padding, and depth effects such as lighting and shadows.</p>
+
+    <button mat-raised-button color="primary">Primary</button>
+    <button mat-fab color="accent">
+        <mat-icon>add</mat-icon>
+    </button>
+  </mat-card-content>
+</mat-card>
+
+- ดูตัวอย่างภาพไอคอนได้ที่
+- https://fonts.google.com/icons
+- https://www.angularjswiki.com/angular/angular-material-icons-list-mat-icon-list/
+
+Step 9: ติดตั้ง Tailwind CSS
+---
+npm install -D tailwindcss postcss autoprefixer
+
+Step 10: สร้างไฟล์ tailwind.config.js
+---
+npx tailwindcss init
+
+Step 11: แก้ไขไฟล์ tailwind.config.js
+---
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./src/**/*.{html,ts}"],
+  theme: {
+    extend: {
+      gridTemplateColumns: {
+        fluid: "repeat(auto-fit, minmax(11rem, 1fr))",
+      },
+    },
+  },
+  plugins: [],
+  corePlugins: {
+    preflight: false,
+  },
+};
+
+Step 12: แก้ไขไฟล์ styles.scss ใน src/styles.scss
+---
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Noto Sans Thai", sans-serif; }
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container > * {
+  margin-top: 15px;
+  width: 100%;
+}
+
+// Fix blue border in button caused by bs4
+button:focus,
+button:active:focus,
+button.active:focus {
+  outline: none !important;
+  outline-style: none !important;
+}
+
+.mat-mdc-outlined-button {
+  background-color: rgb(255, 235, 235) !important;
+}
+
+Step 13: Material Custom Theme สร้างไฟล์ theme.scss ใน src/theme.scss
+---
+@use "@angular/material" as mat;
+@include mat.core();
+
+$typography-config: mat.define-typography-config(
+  $font-family: '"Noto Sans Thai", sans-serif',
+  $headline-1:
+    mat.define-typography-level(112px, 112px, 300, $letter-spacing: -0.05em),
+  $headline-2:
+    mat.define-typography-level(56px, 56px, 400, $letter-spacing: -0.02em),
+  $headline-3:
+    mat.define-typography-level(45px, 48px, 400, $letter-spacing: -0.005em),
+  $headline-4: mat.define-typography-level(34px, 40px, 400),
+  $headline-5: mat.define-typography-level(24px, 32px, 400),
+  $headline-6: mat.define-typography-level(20px, 32px, 400),
+  $subtitle-1: mat.define-typography-level(16px, 28px, 400),
+  $body-1: mat.define-typography-level(14px, 20px, 400),
+  $body-2: mat.define-typography-level(14px, 20px, 400),
+  $subtitle-2: mat.define-typography-level(16px, 28px, 400),
+  $caption: mat.define-typography-level(12px, 20px, 400),
+  $button: mat.define-typography-level(14px, 14px, 500),
+);
+
+$my-primary: mat.define-palette(mat.$red-palette, 700);
+$my-accent: mat.define-palette(mat.$purple-palette, A400);
+$my-warn: mat.define-palette(mat.$red-palette, 800);
+
+$my-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $my-primary,
+      accent: $my-accent,
+      warn: $my-warn,
+    ),
+    typography: $typography-config,
+    density: 0,
+  )
+);
+
+@include mat.all-component-themes($my-theme);
+
+Step 14: แก้ไขไฟล์ angular.json
+---
+.
+.
+"styles": [
+    "src/theme.scss",
+    "src/styles.scss"
+],
+.
+.
+
+Step 15: ทดลองใช้งาน Material Design ในไฟล์ app.component.html
+---
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      <h1 class="text-blue-600 underline">Material Design</h1>
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>Material Design is a design language developed by Google in 2014. Expanding on the "card" motifs that debuted in Google Now, Material Design uses more grid-based layouts, responsive animations and transitions, padding, and depth effects such as lighting and shadows.</p>
+
+    <button mat-raised-button color="primary">Primary</button>
+    <button mat-fab color="accent">
+        <mat-icon>add</mat-icon>
+    </button>
+  </mat-card-content>
+
+    <mat-card-actions>
+        <button mat-button>LIKE</button>
+        <button mat-button>SHARE</button>
+    </mat-card-actions>
+</mat-card>
+
+<router-outlet />
+
+Step 16: Material Font Custom
+---
+- copy font family from https://fonts.google.com/,  copy font link and paste in index.html (head)
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap"
+    rel="stylesheet"
+/>
+
+Step 17: สร้าง Component ชื่อ "header"
+---
+ng g c components/header --skip-tests
+
+# จะได้โครงสร้างไฟล์ดังนี้
+---
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── components
+│   │   │   ├── header
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   ├── header.component.ts
+│   │   ├── material
+│   │   │   ├── material.module.ts
+│   │   ├── app-routing.module.ts
+│   │   ├── app.component.html
+│   │   ├── app.component.scss
+│   │   ├── app.component.spec.ts
+│   │   ├── app.component.ts
+│   │   ├── app.module.ts
+│   ├── assets
+│   ├── index.html
+│   ├── main.ts
+│   ├── styles.scss
+├── .editorconfig
+├── .gitignore
+├── angular.json
+├── package.json
+├── README.md
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.spec.json
+
+Step 18: แก้ไขไฟล์ header.component.html
+---
+<mat-toolbar color="primary" class="flex flex-row">
+    <mat-toolbar-row>
+      <!-- toggle button -->
+      <button *ngIf="isOpened" mat-icon-button (click)="onToggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <a id="home-button" (click)="onToggleSidenav()"
+        ><div class="mat-body1">V. {{ version }}</div></a
+      >
+  
+      <!-- center title -->
+      <div style="flex: 0.9"></div>
+      <div class="mat-body2">
+        ITGENIUS {{ pageName }}
+      </div>
+      <div style="flex: 1"></div>
+  
+      <!-- logout button -->
+      <span>
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="menu"
+          aria-label="Example icon-button with a menu"
+          class="ml-auto"
+        >
+          <img
+            height="40"
+            width="40"
+            [src]="'assets/images/itglogo.png'"
+            alt="IT Genius Logo"
+          />
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onClickSignout()">
+            <mat-icon>lock</mat-icon>
+            <span>ออกจากระบบ</span>
+          </button>
+        </mat-menu>
+      </span>
+    </mat-toolbar-row>
+</mat-toolbar>
+
+Step 19: แก้ไขไฟล์ header.component.ts
+---
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core'
+
+@Component({
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.scss'
+})
+export class HeaderComponent implements OnInit {
+
+  @Output() sidenavToggle = new EventEmitter<void>();
+  @Input() isOpened?: boolean
+
+  pageName: string = 'Stock'
+  version = '1.0.0'
+
+  constructor() { }
+
+  ngOnInit(): void {
+  }
+
+  onToggleSidenav() {
+    this.sidenavToggle.emit();
+  }
+
+  onClickSignout() {
+    // Add signout logic here
+  }
+
+}
+
+Step 20: สร้าง Component ชื่อ "menu"
+---
+ng g c components/menu --skip-tests
+
+# จะได้โครงสร้างไฟล์ดังนี้
+---
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── components
+│   │   │   ├── header
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   ├── header.component.ts
+│   │   │   ├── menu
+│   │   │   │   ├── menu.component.html
+│   │   │   │   ├── menu.component.scss
+│   │   │   │   ├── menu.component.ts
+│   │   ├── material
+│   │   │   ├── material.module.ts
+.
+
+Step 21: แก้ไขไฟล์ menu.component.html
+---
+<mat-nav-list class="container">
+    <img
+      *ngIf="isOpened"
+      [src]="'assets/images/angular_logo.png'"
+      alt=""
+      width="100%"
+    />
+  
+    <!-- menu button when collapse -->
+    <div
+      *ngIf="!isOpened"
+      class="!bg-red-500 h-[64px] flex justify-center items-center"
+    >
+      <button
+        class="!bg-red-500 !text-white"
+        mat-icon-button
+        (click)="onToggleSidenav()"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
+  
+    <div style="height: 8px"></div>
+  
+    <a mat-list-item routerLink="/stock" routerLinkActive="active">
+      <mat-icon>dashboard</mat-icon>
+      <span *ngIf="isOpened" class="nav-caption">Stock</span>
+    </a>
+  
+    <mat-divider> </mat-divider>
+  
+    <a mat-list-item routerLink="/shop" routerLinkActive="active">
+      <mat-icon>shop</mat-icon>
+      <span *ngIf="isOpened" class="nav-caption">Shop</span>
+    </a>
+    <mat-divider> </mat-divider>
+    <a mat-list-item routerLink="/report" routerLinkActive="active">
+      <mat-icon>pie_chart</mat-icon>
+      <span *ngIf="isOpened" class="nav-caption">Report</span>
+    </a>
+  
+    <mat-divider> </mat-divider>
+  
+    <a mat-list-item routerLink="/transaction" routerLinkActive="active">
+      <mat-icon>history</mat-icon>
+      <span *ngIf="isOpened" class="nav-caption">Transaction (Optional)</span>
+    </a>
+    <mat-divider> </mat-divider>
+  </mat-nav-list>
+  
+Step 22: แก้ไขไฟล์ menu.component.scss
+---
+.container {
+  padding: 0px !important;
+}
+
+.nav-caption {
+  margin-left: 10px;
+}
+a.active {
+  background-color: rgba(103, 58, 183, 0.15);
+  color: #673ab7;
+}
+
+.mat-icon {
+  font-size: 25px;
+}
+
+.nav-caption {
+  margin-left: 30px;
+  font-size: 16px;
+}
+
+Step 23: แก้ไขไฟล์ menu.component.ts
+---
+import { Component,OnInit, Output, EventEmitter, Input } from '@angular/core'
+
+@Component({
+  selector: 'app-menu',
+  templateUrl: './menu.component.html',
+  styleUrl: './menu.component.scss'
+})
+export class MenuComponent implements OnInit {
+
+  @Input() isOpened?: boolean;
+  @Output() sidenavToggle = new EventEmitter<void>();
+
+  constructor() {}
+
+  ngOnInit() {}
+
+  onToggleSidenav() {
+    this.sidenavToggle.emit();
+  }
+
+}
+
+Step 24: สร้าง Component ชื่อ "login"
+---
+ng g c components/login --skip-tests
+
+# จะได้โครงสร้างไฟล์ดังนี้
+---
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── components
+│   │   │   ├── header
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   ├── header.component.ts
+│   │   │   ├── menu
+│   │   │   │   ├── menu.component.html
+│   │   │   │   ├── menu.component.scss
+│   │   │   │   ├── menu.component.ts
+│   │   │   ├── login
+│   │   │   │   ├── login.component.html
+│   │   │   │   ├── login.component.scss
+│   │   │   │   ├── login.component.ts
+│   │   ├── material
+│   │   │   ├── material.module.ts
+.
+
+Step 25: แก้ไขไฟล์ login.component.html
+---
+<mat-card class="mt-5 login-box">
+    <img
+      alt="banner"
+      mat-card-image
+      [src]="'assets/images/angular_logo.png'"
+      height="200"
+    />
+    <mat-card-header>
+      <mat-card-title>Login</mat-card-title>
+    </mat-card-header>
+    <form #loginForm="ngForm" (submit)="null">
+      <mat-card-content style="display: flex; flex-direction: column">
+        <!-- Username -->
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input ngModel name="username" matInput />
+          <mat-icon matSuffix>account_box</mat-icon>
+        </mat-form-field>
+  
+        <!-- Password -->
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            ngModel
+            name="password"
+            matInput
+            [type]="hide ? 'password' : 'text'"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="hide = !hide"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hide"
+          >
+            <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+          </button>
+        </mat-form-field>
+  
+        <div *ngIf="error" style="color: red">{{ error }}</div>
+      </mat-card-content>
+      <mat-card-actions class="flex justify-center w-full">
+        <button mat-raised-button type="submit" color="primary" mat-button class="mr-3">
+          Login
+        </button>
+        <button
+          mat-flat-button
+          type="button"
+          (click)="onClickRegister()"
+          mat-button
+        >
+          Register
+        </button>
+      </mat-card-actions>
+    </form>
+  </mat-card>
+  
+Step 26: แก้ไขไฟล์ login.component.scss
+---
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: url("/assets/images/angular_background.jpg") no-repeat center
+    center;
+  background-size: cover;
+}
+
+.login-box {
+  height: auto;
+  padding-bottom: 20px;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+mat-card-title,
+mat-card-content {
+  display: flex;
+  justify-content: center;
+}
+
+.error {
+  padding: 16px;
+  width: 300px;
+  color: white;
+  background-color: red;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+Step 27: แก้ไขไฟล์ login.component.ts
+---
+import { Component } from '@angular/core'
+import { Router } from '@angular/router'
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
+})
+export class LoginComponent {
+
+  hide = true
+  error?: string | null = null
+
+  constructor(private router: Router) { }
+
+  onClickRegister() {
+    this.router.navigate(['/register']);
+  }
+
+}
+
+Step 28: เพิ่ม FormsModule ใน app.module.ts
+---
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+.
+.
+imports: [
+    .
+    .
+    FormsModule,
+    ReactiveFormsModule
+],
+
+Step 29: สร้าง Component ชื่อ "register"
+---
+ng g c components/register --skip-tests
+
+# จะได้โครงสร้างไฟล์ดังนี้
+---
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── components
+│   │   │   ├── header
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   ├── header.component.ts
+│   │   │   ├── menu
+│   │   │   │   ├── menu.component.html
+│   │   │   │   ├── menu.component.scss
+│   │   │   │   ├── menu.component.ts
+│   │   │   ├── login
+│   │   │   │   ├── login.component.html
+│   │   │   │   ├── login.component.scss
+│   │   │   │   ├── login.component.ts
+│   │   │   ├── register
+│   │   │   │   ├── register.component.html
+│   │   │   │   ├── register.component.scss
+│   │   │   │   ├── register.component.ts
+│   │   ├── material
+│   │   │   ├── material.module.ts
+.
+
+Step 30: แก้ไขไฟล์ register.component.html
+---
+<mat-card class="mt-5 register-box">
+    <img
+      mat-card-image
+      [src]="'assets/images/angular_logo.png'"
+      height="200"
+    />
+    <mat-card-header>
+      <mat-card-title>Register</mat-card-title>
+    </mat-card-header>
+    <form #loginForm="ngForm" (submit)="null">
+      <mat-card-content style="display: flex; flex-direction: column">
+        
+        <!-- Username -->
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input ngModel name="username" matInput placeholder="Username" />
+          <mat-icon matSuffix>account_box</mat-icon>
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input ngModel name="email" matInput placeholder="Email" />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+  
+        <!-- Password -->
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            ngModel
+            name="password"
+            matInput
+            [type]="hide ? 'password' : 'text'"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="hide = !hide"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hide"
+          >
+            <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+          </button>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions class="flex justify-center w-full">
+        <button mat-raised-button type="submit" color="primary" mat-button class="mr-3">
+          Register
+        </button>
+        <button
+          mat-flat-button
+          type="button"
+          (click)="onClickCancel()"
+          mat-button
+        >
+          Back to login
+        </button>
+      </mat-card-actions>
+    </form>
+</mat-card>  
+
+Step 31: แก้ไขไฟล์ register.component.scss
+---
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: url("/assets/images/angular_background.jpg") no-repeat center
+    center;
+  background-size: cover;
+}
+
+.register-box {
+  height: auto;
+  padding-bottom: 20px;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+mat-card-title,
+mat-card-content {
+  display: flex;
+  justify-content: center;
+}
+
+.error {
+  padding: 16px;
+  width: 300px;
+  color: white;
+  background-color: red;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+Step 32: แก้ไขไฟล์ register.component.ts
+---
+import { Component, OnInit } from '@angular/core'
+import { Router } from '@angular/router'
+
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss'
+})
+export class RegisterComponent implements OnInit {
+
+  hide = true
+  error?: string | null = null
+
+  constructor(private router: Router) { }
+
+  ngOnInit(): void {
+  }
+
+  async onSubmit() {
+    // Do something
+  }
+
+  onClickCancel() {
+    this.router.navigate(['/login']);
+  }
+
+}
+
+Step 33: สร้าง Component ชื่อ "stock"
+---
+ng g c components/stock --skip-tests
+
+.angular
+.git
+node_modules
+├── src
+│   ├── app
+│   │   ├── components
+│   │   │   ├── header
+│   │   │   │   ├── header.component.html
+│   │   │   │   ├── header.component.scss
+│   │   │   │   ├── header.component.ts
+│   │   │   ├── menu
+│   │   │   │   ├── menu.component.html
+│   │   │   │   ├── menu.component.scss
+│   │   │   │   ├── menu.component.ts
+│   │   │   ├── login
+│   │   │   │   ├── login.component.html
+│   │   │   │   ├── login.component.scss
+│   │   │   │   ├── login.component.ts
+│   │   │   ├── register
+│   │   │   │   ├── register.component.html
+│   │   │   │   ├── register.component.scss
+│   │   │   │   ├── register.component.ts
+│   │   │   ├── stock
+│   │   │   │   ├── stock.component.html
+│   │   │   │   ├── stock.component.scss
+│   │   │   │   ├── stock.component.ts
+│   │   ├── material
+│   │   │   ├── material.module.ts
+.
+
+Step 34: แก้ไขไฟล์ stock.component.html
+---
+<div class="flex flex-row justify-center mt-10">
+    <mat-card class="w-[95%]">
+      <div class="flex flex-row justify-between">
+        <mat-card-header>
+          <mat-card-title>Stock Management</mat-card-title>
+          <mat-card-subtitle>10 รายการ</mat-card-subtitle>
+        </mat-card-header>
+        <button
+          [routerLink]="['/stock/create']"
+          mat-fab
+          class="add-btn"
+          style="margin-right: 60px"
+        >
+          <mat-icon style="font-size: 25px">add</mat-icon>
+        </button>
+      </div>
+      <mat-card-content>
+        <mat-form-field class="w-full">
+          <input
+            class="w-100"
+            matInput
+            type="text"
+            placeholder="ค้นหา"
+            [(ngModel)]="searchValue"
+            (keyup)="doFilter($event)"
+          />
+          <button
+            *ngIf="searchValue"
+            matSuffix
+            mat-icon-button
+            aria-label="Clear"
+            (click)="clearSearch()"
+          >
+            <mat-icon class="!text-sm">close</mat-icon>
+          </button>
+        </mat-form-field>
+  
+        <table
+          mat-table
+          #table
+          [dataSource]="dataSource.data"
+          class="w-full table-hovor"
+          matSort
+          matSortActive="productId"
+          matSortDirection="desc"
+        >
+          <!-- Id -->
+          <ng-container matColumnDef="productId">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>เลขที่</th>
+            <td mat-cell *matCellDef="let row">{{ row.productId }}</td>
+          </ng-container>
+  
+          <!-- Image -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef style="text-align: center">
+              รูป
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <img
+                src="{{ row.image }}"
+                height="50px"
+                class="mat-image-cell"
+              />
+            </td>
+          </ng-container>
+  
+          <!-- Name -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ชื่อ</th>
+            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+          </ng-container>
+  
+          <!-- Price -->
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ราคา</th>
+            <td mat-cell *matCellDef="let row">
+              <span style="margin-right: 16px">
+                ฿ {{ row.price | number : "1.2-2" }}
+              </span>
+            </td>
+          </ng-container>
+  
+          <!-- Stock -->
+          <ng-container matColumnDef="stock">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>จำนวน</th>
+            <td mat-cell *matCellDef="let row">
+              <span style="margin-right: 16px">
+                {{ row.stock | number }} pcs.
+              </span>
+            </td>
+          </ng-container>
+  
+          <!-- Actions -->
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef style="text-align: center">
+              จัดการ
+            </th>
+            <td mat-cell *matCellDef="let row" style="text-align: center">
+              <button
+                [routerLink]="['/stock/edit/' + row.productId]"
+                mat-raised-button
+                class="edit-btn"
+              >
+                แก้ไข
+              </button>
+              |
+              <button
+                (click)="onClickDelete(row)"
+                mat-raised-button
+                class="delete-btn"
+              >
+                ลบ
+              </button>
+            </td>
+          </ng-container>
+  
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+  
+        <div
+          class="flex justify-center mt-5 mat-display-3"
+          *ngIf="dataSource.data.length === 0"
+        >
+          No records found
+        </div>
+  
+        <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 15, 25, 100]">
+        </mat-paginator>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+Step 35: แก้ไขไฟล์ stock.component.scss
+---
+@use "@angular/material" as mat;
+
+.mat-icon {
+  font-size: 50px;
+}
+
+.mat-header-cell {
+  font-size: 20px;
+}
+
+.mat-image-cell {
+  padding: 4px;
+}
+
+.edit-btn {
+  color: white !important;
+  background-color: mat.get-color-from-palette(
+    mat.define-palette(mat.$deep-purple-palette),
+    400
+  ) !important;
+}
+
+.delete-btn {
+  color: white !important;
+  background-color: mat.get-color-from-palette(
+    mat.define-palette(mat.$red-palette),
+    400
+  ) !important;
+}
+
+.add-btn {
+  margin-top: 10px;
+  color: white !important;
+  background-color: mat.get-color-from-palette(
+    mat.define-palette(mat.$pink-palette),
+    400
+  ) !important;
+}
+
+.table-hovor .mat-mdc-row:hover {
+  background-color: rgba(172, 255, 47, 0.215);
+}
+
+Step 36: แก้ไขไฟล์ stock.component.ts
+---
+import { Component, OnInit } from '@angular/core'
+import { Subject } from 'rxjs'
+
+@Component({
+  selector: 'app-stock',
+  templateUrl: './stock.component.html',
+  styleUrl: './stock.component.scss'
+})
+export class StockComponent implements OnInit {
+
+  displayedColumns = ['productId', 'image', 'name', 'price', 'stock', 'action']
+
+  // sample datasource
+  dataSource = {
+    data: [
+      { productId: 1, image: 'image1', name: 'name1', price: 100, stock: 10 },
+      { productId: 2, image: 'image2', name: 'name2', price: 200, stock: 20 },
+      { productId: 3, image: 'image3', name: 'name3', price: 300, stock: 30 },
+      { productId: 4, image: 'image4', name: 'name4', price: 400, stock: 40 },
+      { productId: 5, image: 'image5', name: 'name5', price: 500, stock: 50 },
+      { productId: 6, image: 'image6', name: 'name6', price: 600, stock: 60 },
+      { productId: 7, image: 'image7', name: 'name7', price: 700, stock: 70 },
+      { productId: 8, image: 'image8', name: 'name8', price: 800, stock: 80 },
+      { productId: 9, image: 'image9', name: 'name9', price: 900, stock: 90 },
+      { productId: 10, image: 'image10', name: 'name10', price: 1000, stock: 100 }
+    ],
+    filter: ''
+  }
+
+  searchValue = ''
+  searchTerm = new Subject<string>()
+
+  constructor() {}
+  ngOnInit(): void {}
+
+  async doFilter(event: any) {
+    // do local
+    // this.dataSource.filter = event.target.value.trim();
+    // do remote
+    // this.dataSource.data = await lastValueFrom(
+    //   this.rest.getProductByKeyword(event.target.value)
+    // );
+  }
+
+  onClickDelete(row: any) {
+    // do remote
+    // this.dataSource.data = await lastValueFrom(
+    //   this.rest.deleteProduct(this.selectedProduct)
+    // );
+  }
+
+  clearSearch() {
+    this.searchValue = '';
+    this.searchTerm.next('');
+  }
+
+}
+
+Step 37: แก้ไขไฟล์ app.component.html
+---
+<mat-sidenav-container autosize>
+
+  <mat-sidenav
+    #sidenav
+    mode="side"
+    opened="isExpanded"
+    *ngIf="isLoggedIn"
+    [ngStyle]="{ width: isExpanded ? '270px' : '65px' }"
+    style="
+      background-size: cover !important;
+      background: url('../assets/images/background_menu.jpg') no-repeat center;
+    "
+  >
+    <!-- Menu -->
+    <app-menu
+      [isOpened]="isExpanded"
+      (sidenavToggle)="isExpanded = !isExpanded"
+    ></app-menu>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content class="mat-sidenav-content">
+    <!-- Header -->
+    <app-header
+      [isOpened]="isExpanded"
+      *ngIf="isLoggedIn"
+      (sidenavToggle)="isExpanded = !isExpanded"
+    ></app-header>
+
+    <!-- Page Content -->
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+  
+</mat-sidenav-container>
+
+Step 38: แก้ไขไฟล์ app.component.scss
+---
+.example-container {
+  width: 100%;
+  height: 100%;
+}
+
+mat-drawer-content {
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+mat-sidenav-container,
+mat-sidenav-content,
+mat-sidenav {
+  height: 100%;
+}
+
+mat-sidenav {
+  width: 250px;
+}
+
+
+Step 39: แก้ไขไฟล์ app.component.ts
+---
+import { Component, ViewChild } from '@angular/core'
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  isExpanded = true
+  isLoggedIn = true
+
+  @ViewChild('sidenav', { static: true }) sidenav: any
+  constructor() {}
+
+  toggleSideBar() {
+    this.sidenav.toggle();
+  }
+}
+
+Step 40: แก้ไขไฟล์ app-routing.module.ts
+---
+import { NgModule } from '@angular/core'
+import { RouterModule, Routes } from '@angular/router'
+import { LoginComponent } from './components/login/login.component'
+import { RegisterComponent } from './components/register/register.component'
+import { StockComponent } from './components/stock/stock.component'
+
+const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: 'login', component: LoginComponent, data: { title: 'Login' } },
+  { path: 'register', component: RegisterComponent },
+  { path: 'stock', component: StockComponent },
+  { path: '**', redirectTo: 'login' }, // undefined pages
+]
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+Step 41: ทดลองรันโปรเจค
+---
+ng serve --open
+
+Step 42: กำหนด API URL ที่ไฟล์ environments/environment.prod.ts และ environment.ts
+---
+environments/environment.ts
+--
+export const environment = {
+    production: false,
+    dotnet_api_url: 'http://demo.dotnetcoreoac.com/api/',
+    dotnet_api_url_image: 'http://demo.dotnetcoreoac.com/uploads/',
+    base_url: '',
+    token: '',
+    version: '1.0',
+}
+
+environments/environment.prod.ts
+---
+export const environment = {
+    production: true,
+    dotnet_api_url: 'http://demo.dotnetcoreoac.com/api/',
+    dotnet_api_url_image: 'http://demo.dotnetcoreoac.com/uploads/',
+    base_url: '',
+    token: '',
+    version: '1.0',
+}
+
+Step 43: สร้างไฟล์ Service สำหรับเชื่อมต่อ API
+---
+ng g s services/user --skip-tests
+
+import { Observable } from 'rxjs'
+import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { Injectable } from '@angular/core'
+import { environment } from '../../environments/environment'
+import { UserModelLogin, UserModelRegister  } from '../models/user.model'
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+
+  private apiURL = environment.dotnet_api_url
+
+  // Header
+  httpOptions  = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    })
+  }
+
+  constructor(private http: HttpClient) { }
+
+  // Method for Login
+  Login(data: UserModelLogin): Observable<UserModelLogin> {
+    return this.http.post<UserModelLogin>(
+      this.apiURL + 'Authenticate/login', 
+      data, 
+      this.httpOptions
+    )
+  }
+
+  // Method for Register
+  Register(data: UserModelRegister): Observable<UserModelRegister> {
+    return this.http.post<UserModelRegister>(
+      this.apiURL + 'Authenticate/register-user', 
+      data, 
+      this.httpOptions
+    )
+  }
+
+  // Method for Logout
+  Logout() {
+    // Remove token from local storage
+    localStorage.removeItem('token')
+    return this.http.post(this.apiURL + 'Authenticate/logout', this.httpOptions)
+  }
+
+}
+
+Step 44: สร้าง custom alert dialog
+---
+ng g c components/alertDialog --skip-tests
+
+แก้ไขไฟล์ alert-dialog.componentt.html
+---
+<div style="width: 350px">
+    <div *ngIf="data.icon" class="flex justify-center w-full h-12 mt-6">
+        <mat-icon  [style.color]="data.iconColor" style="font-size: 64px; height: 64px; width: 64px;">
+            {{ data.icon }}
+        </mat-icon>
+    </div>
+    <h1 mat-dialog-title>{{ data.title }}</h1>
+    <div mat-dialog-content class="mat-typography">
+        <h3 class="mat-small">{{ data.subtitle }}</h3>
+    </div>
+    <div mat-dialog-actions align="center" class="!mb-4">
+        <button mat-button (click)="closeDialog()" color="primary">ปิดหน้าต่าง</button>
+    </div>
+</div>
+
+แก้ไขไฟล์ dalert-dialog.component.ts
+---
+import { Component, OnInit, Inject } from '@angular/core'
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
+
+@Component({
+  selector: 'app-alert-dialog',
+  templateUrl: './alert-dialog.component.html',
+  styleUrl: './alert-dialog.component.scss'
+})
+export class AlertDialogComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<AlertDialogComponent>,
+    @Inject(MAT_DIALOG_DATA)
+    public data: any
+  ) { }
+
+  ngOnInit(): void {
+  }
+
+  closeDialog(): void {
+    this.dialogRef.close(null)
+  }
+
+}
+
+
+Step 45: แก้ไขไฟล์ login.component.html
+---
+<mat-card class="mt-5 login-box">
+  <img
+    alt="banner"
+    mat-card-image
+    [src]="'assets/images/angular_logo.jpg'"
+    height="auto"
+  />
+  <mat-card-header>
+    <mat-card-title>ยินดีต้อนรับ</mat-card-title>
+  </mat-card-header>
+
+  <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+    <mat-card-content style="display: flex; flex-direction: column">
+      
+      <!-- Username -->
+      <mat-form-field>
+        <mat-label>Username</mat-label>
+        <input 
+          name="username"
+          id="username"
+          formControlName="username" 
+          matInput />
+        <mat-icon matSuffix>account_box</mat-icon>
+      </mat-form-field>
+
+      <!-- Password -->
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input
+          name="password"
+          id="password"
+          formControlName="password"
+          matInput
+          [type]="hide ? 'password' : 'text'"
+        />
+        <button
+          type="button"
+          mat-icon-button
+          matSuffix
+          (click)="hide = !hide"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hide"
+        >
+          <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+        </button>
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions class="flex justify-center w-full">
+      <button mat-raised-button type="submit" color="primary" mat-button class="mr-3">
+        เข้าสู่ระบบ
+      </button>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="onClickRegister()"
+        mat-button
+      >
+        สมัครสมาชิก
+      </button>
+    </mat-card-actions>
+  </form>
+
+</mat-card>
+
+แก้ไขไฟล์ login.component.scss
+---
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: url("/assets/images/bg_angular.jpg") no-repeat center
+    center;
+  background-size: cover;
+}
+
+.login-box {
+  width: 400px;
+  height: auto;
+  padding-bottom: 20px;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+mat-card-title,
+mat-card-content {
+  display: flex;
+  justify-content: center;
+}
+
+.error {
+  padding: 16px;
+  width: 300px;
+  color: white;
+  background-color: red;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+แก้ไขไฟล์ login.component.ts
+---
+import { Component, OnInit } from '@angular/core'
+import { Router } from '@angular/router'
+import { FormGroup, FormBuilder, Validators } from '@angular/forms'
+import { UserService } from '../../services/user.service'
+import { MatDialog } from '@angular/material/dialog'
+import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
+})
+export class LoginComponent implements OnInit {
+  // Form Validation
+  loginForm!: FormGroup
+
+  // Variables สำหรับรับค่าจากฟอร์ม
+  userData = {
+    username: '',
+    password: '',
+  }
+
+  // สำหรับซ่อนแสดง password
+  hide = true
+
+  constructor(
+    private router: Router,
+    private formBuilder: FormBuilder,
+    private http: UserService,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit() {
+    // กำหนดค่าให้กับ Form
+    this.loginForm = this.formBuilder.group({
+      username: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+    })
+  }
+
+  // ฟังก์ชัน Submit สำหรับ Login
+  submitLogin() {
+    if (this.loginForm.invalid) {
+      this.dialog.open(AlertDialogComponent, {
+        data: {
+          title: 'มีข้อผิดพลาด',
+          icon: 'error',
+          iconColor: 'red',
+          subtitle: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        },
+      })
+    } else {
+      this.userData.username = this.loginForm.value.username
+      this.userData.password = this.loginForm.value.password
+
+      // เรียกใช้งาน Service สำหรับ Login
+      this.http.Login(this.userData).subscribe({
+        
+        next: (data: any) => {
+          if (data.token != null) {
+            this.dialog.open(AlertDialogComponent, {
+              data: {
+                title: 'Login Success',
+                icon: 'check_circle',
+                iconColor: 'green',
+                subtitle: 'Welcome to our website.',
+              },
+            })
+
+            // สำหรับเก็บ Token ลง Local Storage
+            localStorage.setItem('token', data.token)
+            window.location.href = '/stock'
+          }
+        },
+
+        error: (error) => {
+          console.log(error)
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'มีข้อผิดพลาด',
+              icon: 'error',
+              iconColor: 'red',
+              subtitle: 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง',
+            },
+          })
+        },
+
+      })
+    }
+  }
+
+  // สำหรับลิงก์ไปหน้า Register
+  onClickRegister() {
+    this.router.navigate(['/register'])
+  }
+}
+
+Step 46: แก้ไขไฟล์ register.component.html
+---
+<mat-card class="mt-5 register-box">
+    <img
+      mat-card-image
+      [src]="'assets/images/angular_logo.jpg'"
+      height="auto"
+    />
+    <mat-card-header>
+      <mat-card-title>สมัครสมาชิก</mat-card-title>
+    </mat-card-header>
+
+    <form [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+      <mat-card-content style="display: flex; flex-direction: column">
+        
+         <!-- Username -->
+         <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input 
+            name="username" 
+            id="username"
+            formControlName="username" 
+            matInput 
+            placeholder="Username"
+           />
+          <mat-icon matSuffix>account_box</mat-icon>
+        </mat-form-field>
+
+
+        <!-- Email -->
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input 
+            name="email" 
+            id="email"
+            formControlName="email"
+            matInput 
+            placeholder="Email" />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+  
+        <!-- Password -->
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            name="password"
+            id="password"
+            formControlName="password"
+            matInput
+            [type]="hide ? 'password' : 'text'"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="hide = !hide"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hide"
+          >
+            <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+          </button>
+        </mat-form-field>
+        
+      </mat-card-content>
+      <mat-card-actions class="flex justify-center w-full">
+        <button mat-raised-button type="submit" color="primary" mat-button class="mr-3">
+          บันทึก
+        </button>
+        <button
+          mat-flat-button
+          type="button"
+          (click)="onClickCancel()"
+          mat-button
+        >
+          กลับหน้าล็อกอิน
+        </button>
+      </mat-card-actions>
+    </form>
+</mat-card>
+
+แก้ไขไฟล์ register.component.scss
+---
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: url("/assets/images/bg_angular.jpg") no-repeat center
+    center;
+  background-size: cover;
+}
+
+.register-box {
+  width: 400px;
+  height: auto;
+  padding-bottom: 20px;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+mat-card-title,
+mat-card-content {
+  display: flex;
+  justify-content: center;
+}
+
+.error {
+  padding: 16px;
+  width: 300px;
+  color: white;
+  background-color: red;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+แก้ไขไฟล์ register.component.ts
+---
+import { Component, OnInit } from '@angular/core'
+import { Router } from '@angular/router'
+import { FormGroup, FormBuilder, Validators } from '@angular/forms'
+import { UserService } from '../../services/user.service'
+import { MatDialog } from '@angular/material/dialog'
+import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
+
+@Component({
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss',
+})
+export class RegisterComponent implements OnInit {
+  registerForm!: FormGroup
+
+  // Variables สำหรับรับค่าจากฟอร์ม
+  userData = {
+    username: '',
+    email: '',
+    password: '',
+  }
+
+  // สำหรับซ่อนแสดง password
+  hide = true
+
+  constructor(
+    private router: Router,
+    private formBuilder: FormBuilder,
+    private http: UserService,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit(): void {
+    // Validate form
+    this.registerForm = this.formBuilder.group({
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+    })
+  }
+
+  // ฟังก์ชัน Submit สำหรับ Register
+  submitRegister() {
+    if (this.registerForm.invalid) {
+      this.dialog.open(AlertDialogComponent, {
+        data: {
+          title: 'มีข้อผิดพลาด',
+          icon: 'error',
+          iconColor: 'red',
+          subtitle: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        },
+      })
+    } else {
+      this.userData.username = this.registerForm.value.username
+      this.userData.email = this.registerForm.value.email
+      this.userData.password = this.registerForm.value.password
+
+      // เรียกใช้งาน Service สำหรับ Register
+      this.http.Register(this.userData).subscribe({
+        next: (data: any) => {
+          console.log(data)
+          if (data.status === 'Success') {
+            this.dialog.open(AlertDialogComponent, {
+              data: {
+                title: 'สำเร็จ',
+                icon: 'check_circle',
+                iconColor: 'green',
+                subtitle: 'สมัครสมาชิกสำเร็จ',
+              },
+            })
+            this.router.navigate(['/login'])
+          } else {
+            this.dialog.open(AlertDialogComponent, {
+              data: {
+                title: 'มีข้อผิดพลาด',
+                icon: 'error',
+                iconColor: 'red',
+                subtitle: 'มีข้อผิดพลาดในการสมัครสมาชิก',
+              },
+            })
+          }
+        },
+        error: (error: any) => {
+          console.log(error)
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'มีข้อผิดพลาด',
+              icon: 'error',
+              iconColor: 'red',
+              subtitle: error.error.message,
+            },
+          })
+        },
+      })
+    }
+  }
+
+  onClickCancel() {
+    this.router.navigate(['/login'])
+  }
+}
+
+
+-------------------------------------------------------
+✈ DAY 5
+8: Angular Auth Guard
+9: Angular Interceptor
+10: Angular CRUD Operation
+-------------------------------------------------------
+Step 1: แก้ไข dotnetapi ที่ไฟล์ AuthenticateController.cs ในส่วนของ Login
+---
+// Login for User
+// Post api/authenticate/login-user
+[HttpPost("login")]
+public async Task<ActionResult> Login([FromBody] LoginModel model)
+{
+
+    var user = await _userManager.FindByNameAsync(model.Username!);
+
+    // ถ้า login สำเร็จ
+    if(user != null && await _userManager.CheckPasswordAsync(user, model.Password!))
+    {
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        foreach (var userRole in userRoles)
+        {
+            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+        }
+
+        var token = GetToken(authClaims);
+
+        return Ok(new 
+        {
+            token = new JwtSecurityTokenHandler().WriteToken(token),
+            expiration = token.ValidTo,
+            userData = new {
+                userName = user.UserName,
+                email = user.Email,
+                roles = userRoles
+            }
+        });
+    }
+
+    // ถ้า login ไม่สำเร็จ
+    return Unauthorized();
+}
+
+Step 2: สร้าง AuthService สำหรับการเข้าถึง Token
+---
+ng g s services/auth --skip-tests
+
+แก้ไขไฟล์ auth.service.ts
+---
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+
+  // สร้างตัวแปรเก็บข้อมูลผู้ใช้งาน
+  userProfile = {
+    "username": "",
+    "email": "",
+    "role": "",
+    "token": ""
+  }
+
+  constructor(private route: Router) { }
+
+  // ฟังก์ชันสำหรับเก็บ user ลง local storage
+  setUser(user: any){
+    // บันทึก token ลง local storage
+    localStorage.setItem("LoggedInUser", user['username'])
+    localStorage.setItem("LoggedInEmail", user['email'])
+    localStorage.setItem("LoggedInRole", user['role'])
+    localStorage.setItem("LoggedInToken", user['token'])
+  }
+
+  // ฟังก์ขันสำหรับ getUser จาก local storage
+  getUser(){
+    this.userProfile.username = localStorage.getItem("LoggedInUser") || ""
+    this.userProfile.email = localStorage.getItem("LoggedInEmail") || ""
+    this.userProfile.role = localStorage.getItem("LoggedInRole") || ""
+    this.userProfile.token = localStorage.getItem("LoggedInToken") || ""
+    return this.userProfile
+  }
+
+  // ฟังก์ชันเช็คสถานะการ Login
+  isLoggedIn(){
+    return this.getUser().token !== ""
+  }
+
+  // ฟังก์ชันสำหรับ Logout
+  logout(){
+    localStorage.removeItem("LoggedInUser")
+    localStorage.removeItem("LoggedInEmail")
+    localStorage.removeItem("LoggedInRole")
+    localStorage.removeItem("LoggedInToken")
+    this.route.navigate(['/login'])
+  }
+
+}
+
+Step 3: สร้าง Guard สำหรับการเข้าถึงหน้าแบบ AuthGuard
+---
+ng g g auth/auth --skip-tests
+
+? Which type of guard would you like to create? (Press <space> to select, <a> to toggle all, <i> to invert selection, and <enter> to proceed)
+>(*) CanActivate
+ ( ) CanActivateChild
+ ( ) CanDeactivate
+ ( ) CanMatch
+
+แก้ไขไฟล์ auth.guard.ts
+---
+import { inject } from '@angular/core'
+import { CanActivateFn, Router } from '@angular/router'
+import { AuthService } from './../services/auth.service'
+
+export const authenGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router)
+  const rest = inject(AuthService)
+
+  // console.log('authenGuard', rest.isLoggedIn())
+
+  if (rest.isLoggedIn()) {
+    // already logged-in
+    if (state.url == '/login' || state.url == '/register') {
+      router.navigate(['stock'])
+    }
+    return true
+  } else {
+    // not yet logged-in
+    if (state.url != '/login') {
+      router.navigate(['login'])
+    }
+    return true
+  }
+}
+
+Step 4: แก้ไขหน้า login.component.ts
+---
+import { AuthService } from '../../services/auth.service'
+.
+.
+// สร้างตัวแปรเก็บข้อมูลการ Login
+  userLogin = {
+    "username": "",
+    "email": "",
+    "role": "",
+    "token": ""
+}
+
+constructor(
+    private auth: AuthService,
+    private router: Router,
+    private formBuilder: FormBuilder,
+    private http: UserService,
+    private dialog: MatDialog
+) {}
+
+
+// ฟังก์ชัน Submit สำหรับ Login
+  submitLogin() {
+    if (this.loginForm.invalid) {
+      this.dialog.open(AlertDialogComponent, {
+        data: {
+          title: 'มีข้อผิดพลาด',
+          icon: 'error',
+          iconColor: 'red',
+          subtitle: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        },
+      })
+    } else {
+      this.userData.username = this.loginForm.value.username
+      this.userData.password = this.loginForm.value.password
+
+      // เรียกใช้งาน Service สำหรับ Login
+      this.http.Login(this.userData).subscribe({
+        
+        next: (data: any) => {
+          if (data.token != null) {
+
+            this.dialog.open(AlertDialogComponent, {
+              data: {
+                title: 'Login Success',
+                icon: 'check_circle',
+                iconColor: 'green',
+                subtitle: 'Welcome to our website.',
+              },
+            })
+
+            this.userLogin = {
+              "username": data.userData.userName,
+              "email": data.userData.email,
+              "role": data.userData.roles[0],
+              "token": data.token
+            }
+
+            // console.log(this.userLogin)
+
+            // บันทึกข้อมูลลง local storage
+            this.auth.setUser(this.userLogin)
+
+            // delay 2 วินาที
+            setTimeout(() => {
+              // Redirect ไปหน้า backend
+              window.location.href = '/stock'
+            }, 2000);
+
+          }
+        },
+
+        error: (error) => {
+          console.log(error)
+          this.dialog.open(AlertDialogComponent, {
+            data: {
+              title: 'มีข้อผิดพลาด',
+              icon: 'error',
+              iconColor: 'red',
+              subtitle: 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง',
+            },
+          })
+        },
+
+      })
+    }
+  }
+
+Step 5: แก้ไขไฟล์ app-routing.module.ts
+---
+import { NgModule } from '@angular/core'
+import { RouterModule, Routes } from '@angular/router'
+import { LoginComponent } from './components/login/login.component'
+import { RegisterComponent } from './components/register/register.component'
+import { StockComponent } from './components/stock/stock.component'
+
+// Auth Guard
+import { authenGuard } from './auth/auth.guard'
+
+const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { 
+    path: 'login', 
+    component: LoginComponent,
+    canActivate: [authenGuard], 
+    data: { title: 'Login' } 
+  },
+  { 
+    path: 'register', 
+    component: RegisterComponent,
+    canActivate: [authenGuard], 
+  },
+  { 
+    path: 'stock', 
+    component: StockComponent,
+    canActivate: [authenGuard],
+  },
+  { path: '**', redirectTo: 'login' }, // undefined pages
+]
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+Step 6: แก้ไขไฟล์ header.component.ts สำหรับการ Logout
+---
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core'
+import { AuthService } from '../../services/auth.service'
+
+@Component({
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.scss'
+})
+export class HeaderComponent implements OnInit {
+
+  // สร้างตัวแปรไว้เก็บข้อมูลผู้ใช้งานที่ Login
+  userProfile: any = {
+    "username": "",
+    "email": "",
+    "role": ""
+  }
+
+  @Output() sidenavToggle = new EventEmitter<void>();
+  @Input() isOpened?: boolean
+
+  pageName: string = 'STOCK'
+  version = '1.0.0'
+
+  constructor(
+    private auth: AuthService
+  ) {
+    // ดึงข้อมูลผู้ใช้งานที่ Login มาแสดง
+    this.userProfile.username = this.auth.getUser().username
+    this.userProfile.email = this.auth.getUser().email
+    this.userProfile.role = this.auth.getUser().role
+  }
+
+  ngOnInit(): void {
+  }
+
+  onToggleSidenav() {
+    this.sidenavToggle.emit();
+  }
+
+  onClickSignout() {
+    this.auth.logout()
+    window.location.href = '/login'
+  }
+
+}
+
+แก้ไขไฟล์ header.component.html
+---
+.
+.
+<div class="flex flex-col my-2 text-end">
+    <span class="text-sm line-clamp-1">{{ userProfile.username }}</span>
+    <span class="text-sm line-clamp-1">{{ userProfile.email }}</span>
+</div>
+.
+
+
+Step 7: สร้าง product model สำหรับการ CRUD
+---
+ng g class models/product.model --skip-tests
+
+แก้ไขไฟล์ product.model.ts
+---
+export class ProductModel {
+    productID!: number
+    productName!: string
+    unitPrice!: number
+    unitInStock!: number
+    productPicture!: string
+    categoryID!: number
+    categoryName!: string;
+    categoryStatus!: number;
+    createdDate!: Date
+    modifiedDate!: Date
+}
+
+
+Step 8: สร้างไฟล์ product.service.ts สำหรับการเชื่อมต่อ API สำหรับ CRUD
+---
+ng g s services/product --skip-tests
+
+แก้ไขไฟล์ product.service.ts
+---
+

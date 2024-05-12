@@ -1,0 +1,88 @@
+<div class="flex flex-row justify-center mt-5 mb-5">
+    <div class="w-[95%]">
+    <h3>เพิ่มสินค้าใหม่</h3>
+      <form [formGroup]="formProduct" (ngSubmit)="onSubmit()">
+        <div>
+          <div class="form-container">
+            <mat-form-field>
+              <mat-label>ชื่อสินค้า</mat-label>
+              <input
+                matInput
+                placeholder="ชื่อสินค้า"
+                name="productName"
+                id="productName"
+                formControlName="productName"
+                required>
+            </mat-form-field>
+  
+            <mat-form-field>
+              <mat-label>ราคา</mat-label>
+              <input
+                matInput
+                placeholder="ราคา"
+                name="unitPrice"
+                id="unitPrice"
+                formControlName="unitPrice"
+                type="number"
+                required>
+            </mat-form-field>
+  
+            <mat-form-field>
+              <mat-label>จำนวน</mat-label>
+              <input
+                matInput
+                placeholder="จำนวน"
+                name="unitInStock"
+                id="unitInStock"
+                formControlName="unitInStock"
+                type="number"
+                required>
+            </mat-form-field>
+  
+            <mat-form-field>
+              <mat-label>หมวดหมู่</mat-label>
+              <input
+                matInput
+                placeholder="หมวดหมู่"
+                name="categoryID"
+                id="categoryID"
+                formControlName="categoryID"
+                type="number"
+                required>
+            </mat-form-field>
+  
+            <!-- Preview Image -->
+            <div class="d-flex justify-content-center">
+              @if (imageFile) {
+                <img
+                  [src]="imageURL"
+                  alt="preview"
+                  class="w-[300px] object-cover"
+                  />
+              }
+            </div>
+  
+            <label for="input-file-id" class="md-button md-raised md-primary">Choose Files</label>
+            <input
+              class="ng-hide"
+              id="image"
+              name="image"
+              formControlName="image"
+              type="file"
+              (change)="onChangeImage($event)"
+              />
+            
+            <!-- 2 Column -->
+            <div class="flex flex-row justify-center">
+                <button mat-raised-button color="primary">บันทึก</button>
+                <span>&nbsp;&nbsp;</span>
+                <!-- Close Dialog button -->
+                <button mat-raised-button color="success" (click)="closeDialog()">ปิด</button>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  
