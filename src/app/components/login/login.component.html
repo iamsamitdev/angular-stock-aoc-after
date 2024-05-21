@@ -21,6 +21,16 @@
           formControlName="username" 
           matInput />
         <mat-icon matSuffix>account_box</mat-icon>
+
+        @if(submitted && loginForm.controls['username'].errors) {
+          @if(loginForm.controls['username'].errors['required']) {
+            <div class="error">ป้อน username ก่อน</div>
+          }
+          @if(loginForm.controls['username'].errors['minlength']) {
+            <div class="error">ความยาวไม่น้อยกว่า 3 ตัวอักษร</div>
+          }
+        }
+
       </mat-form-field>
 
       <!-- Password -->
@@ -43,6 +53,16 @@
         >
           <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
         </button>
+        
+        @if(submitted && loginForm.controls['password'].errors) {
+          @if(loginForm.controls['password'].errors['required']) {
+            <div class="error">ป้อน password ก่อน</div>
+          }
+          @if(loginForm.controls['password'].errors['minlength']) {
+            <div class="error">ความยาวไม่น้อยกว่า 8 ตัวอักษร</div>
+          }
+        }
+
       </mat-form-field>
     </mat-card-content>
     <mat-card-actions class="flex justify-center w-full">

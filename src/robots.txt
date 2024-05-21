@@ -1,0 +1,2 @@
+User-agent: *
+sitemap: http://a69702.sitemaphosting.com/3927666/sitemap.xml

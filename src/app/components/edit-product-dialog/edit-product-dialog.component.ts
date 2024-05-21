@@ -1,4 +1,5 @@
-import { Component, EventEmitter } from '@angular/core'
+import { Component, EventEmitter, Inject } from '@angular/core'
+import { environment } from '../../../environments/environment'
 import {
   FormGroup,
   FormBuilder,
@@ -19,11 +20,11 @@ import {
 } from '@angular/material/card'
 import { MatSelectModule } from '@angular/material/select'
 import { ProductService } from '../../services/product.service'
-import { MatDialog, MatDialogContent, MatDialogRef } from '@angular/material/dialog'
+import { MatDialogContent, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
 import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
 
 @Component({
-  selector: 'app-create-product-dialog',
+  selector: 'app-edit-product-dialog',
   standalone: true,
   imports: [
     MatCard,
@@ -40,15 +41,19 @@ import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
     MatSelectModule,
     MatDialogContent
   ],
-  templateUrl: './create-product-dialog.component.html',
-  styleUrl: './create-product-dialog.component.scss',
+  templateUrl: './edit-product-dialog.component.html',
+  styleUrl: './edit-product-dialog.component.scss'
 })
-export class CreateProductDialogComponent {
+export class EditProductDialogComponent {
 
   formProduct!: FormGroup
   submitted: boolean = false
   imageURL = null
   imageFile = null
+
+  // Image URL
+  imageAPIURL = environment.dotnet_api_url_image
+  productImage = this.editData.product_picture
 
   // Character count
   remainingCharacters = 50
@@ -59,10 +64,10 @@ export class CreateProductDialogComponent {
 
   // Category
   categories = [
-    { value: '1', viewValue: 'Mobile' },
-    { value: '2', viewValue: 'Tablet' },
-    { value: '3', viewValue: 'Smart Watch' },
-    { value: '4', viewValue: 'Labtop' },
+    { value: 1, viewValue: 'Mobile' },
+    { value: 2, viewValue: 'Tablet' },
+    { value: 3, viewValue: 'Smart Watch' },
+    { value: 4, viewValue: 'Labtop' },
   ]
 
   // ฟังก์ชันสำหรับเลือกรูปภาพ
@@ -106,13 +111,28 @@ export class CreateProductDialogComponent {
       created_date: [dateNow],
       modified_date: [dateNow],
     })
+
+    if (this.editData) {
+      this.formProduct.patchValue({
+        product_name: this.editData.product_name,
+        unit_price: this.editData.unit_price,
+        unit_in_stock: this.editData.unit_in_stock,
+        category_id: this.editData.category_id,
+        created_date: this.editData.created_date,
+        modified_date: this.editData.modified_date,
+      })
+    }
+
+    console.log(this.editData)
+
   }
 
   constructor(
     private formBuilder: FormBuilder,
-    public dialogRef: MatDialogRef<CreateProductDialogComponent>,
+    public dialogRef: MatDialogRef<EditProductDialogComponent>,
     private http: ProductService,
-    private dialog: MatDialog,    
+    private dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public editData: any
   ) {}
 
   ngOnInit() {
@@ -121,6 +141,8 @@ export class CreateProductDialogComponent {
   }
 
   onSubmit() {
+    console.log('Submit form')
+
     this.submitted = true
     if (this.formProduct.invalid) {
       return
@@ -143,43 +165,43 @@ export class CreateProductDialogComponent {
         console.log(pair[0] + ', ' + pair[1])
       }
 
-      this.http.createProduct(formData).subscribe({
+      this.http.updateProduct(this.editData.product_id, formData).subscribe({
         next: (data) => {
           console.log(data)
          
           this.dialog.open(AlertDialogComponent, {
             data: {
-              title: 'Product Created',
+              title: 'Product Updated',
               icon: 'check_circle',
               iconColor: 'green',
-              subtitle: 'Product created successfully.',
+              subtitle: 'Product updated successfully.',
             },
           })
           
-          // Reset the form
-          this.formProduct.reset()
           // Close the dialog
           this.dialogRef.close(true)
           // Emit event to parent component
-          this.onCreateSuccess()
+          this.onUpdatedSuccess()
         },
         error: (error) => {
           console.error(error)
-          alert('An error occurred while creating the product')
+          alert('An error occurred while updating the product')
         }
       })
     }
+    
   }
 
   closeDialog(): void {
+    console.log('Close dialog')
     this.dialogRef.close(false)
   }
 
   // Emit event to parent component
-  productCreated = new EventEmitter<boolean>()
+  productUpdated = new EventEmitter<boolean>()
 
-  onCreateSuccess() {
-    this.productCreated.emit(true)
+  onUpdatedSuccess() {
+    this.productUpdated.emit(true)
   }
 
 }

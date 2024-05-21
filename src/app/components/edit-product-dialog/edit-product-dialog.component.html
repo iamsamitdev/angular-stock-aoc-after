@@ -1,0 +1,126 @@
+<mat-dialog-content class="mat-typography !pt-6 !pb-6">
+    <div class="flex flex-row justify-center">
+      <div class="w-[95%]">
+      <h3 class="text-black text-center text-2xl">{{ formProduct.value.product_name }}</h3>
+
+        <div class="flex flex-row justify-center">
+          <img
+            [src]="productImage != 'noimg.jpg' ? 
+                imageAPIURL + productImage 
+                : 
+                'assets/images/nglogo.jpg'"
+              class="w-80 object-cover rounded-md"
+            />
+        </div>
+
+        <form [formGroup]="formProduct" (ngSubmit)="onSubmit()">
+          <div>
+            <div class="form-container">
+  
+              <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input
+                  matInput
+                  placeholder="Product name"
+                  name="product_name"
+                  id="product_name"
+                  maxlength="50"
+                  [(ngModel)]="this.formProduct.value.product_name" (keyup)="countCharacters()"
+                  formControlName="product_name"
+                  required>
+                  <span class="character-count">{{ remainingCharacters }} characters remaining</span>
+                  @if(submitted && formProduct.controls['product_name'].errors) {
+                    @if(formProduct.controls['product_name'].errors['required']) {
+                      <div class="error">ป้อนชื่อสินค้าก่อน</div>
+                    }
+                    @if(formProduct.controls['product_name'].errors['minlength']) {
+                      <div class="error">ความยาวไม่น้อยกว่า 3 ตัวอักษร</div>
+                    }
+                  }
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Price</mat-label>
+                <input
+                  matInput
+                  placeholder="Price"
+                  name="unit_price"
+                  id="unit_price"
+                  formControlName="unit_price"
+                  type="number"
+                  required>
+                  @if(submitted && formProduct.controls['unit_price'].errors) {
+                    @if(formProduct.controls['unit_price'].errors['required']) {
+                      <div class="error">ป้อนราคาก่อน</div>
+                    }
+                  }
+              </mat-form-field>
+    
+              <mat-form-field>
+                <mat-label>Qty</mat-label>
+                <input
+                  matInput
+                  placeholder="Quantity"
+                  name="unit_in_stock"
+                  id="unit_in_stock"
+                  formControlName="unit_in_stock"
+                  type="number"
+                  required>
+                  @if(submitted && formProduct.controls['unit_in_stock'].errors) {
+                    @if(formProduct.controls['unit_in_stock'].errors['required']) {
+                      <div class="error">ป้อนจำนวนสินค้าก่อน</div>
+                    }
+                  }
+              </mat-form-field>
+  
+              <mat-form-field>
+                <mat-label>Category</mat-label>
+                <mat-select placeholder="Category" [value]="formProduct.value.category_id" formControlName="category_id" required>
+                    @for (cat of categories; track cat.value) {
+                        <mat-option [value]="cat.value">{{ cat.viewValue }}</mat-option>
+                    }
+                </mat-select>
+                @if(submitted && formProduct.controls['category_id'].errors) {
+                  @if(formProduct.controls['category_id'].errors['required']) {
+                    <div class="error">เลือกหมวดหมู่ก่อน</div>
+                  }
+                }
+              </mat-form-field>
+    
+              <!-- Preview Image with remove button -->
+              <div class="flex flex-row justify-cente relative">
+                @if (imageFile) {
+                  <img [src]="imageURL" alt="preview" class="w-full object-cover" />
+                
+                  <button
+                    color="accent"
+                    (click)="removeImage()"
+                    class="absolute top-4 right-4 bg-white rounded-full w-10 h-10 cursor-pointer"
+                  >
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </div>
+    
+              <label for="input-file-id" class="md-button md-raised md-primary">Choose Files</label>
+              <input
+                class="ng-hide"
+                id="image"
+                name="image"
+                formControlName="product_picture"
+                type="file"
+                (change)="onChangeImage($event)"
+                />
+              
+              <!-- 2 Column -->
+              <div class="flex flex-row justify-center">
+                  <button mat-raised-button color="primary"><mat-icon class="!text-sm">update</mat-icon> Update</button>
+                  <span>&nbsp;&nbsp;</span>
+                  <button mat-raised-button type="button" color="success" (click)="closeDialog()"><mat-icon class="!text-sm">close</mat-icon> ปิด</button>
+              </div>
+  
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </mat-dialog-content>

@@ -22,6 +22,16 @@
             placeholder="Username"
            />
           <mat-icon matSuffix>account_box</mat-icon>
+
+          @if(submitted && registerForm.controls['username'].errors) {
+            @if(registerForm.controls['username'].errors['required']) {
+              <div class="error">ป้อน username ก่อน</div>
+            }
+            @if(registerForm.controls['username'].errors['minlength']) {
+              <div class="error">ความยาวไม่น้อยกว่า 3 ตัวอักษร</div>
+            }
+          }
+
         </mat-form-field>
 
 
@@ -35,6 +45,16 @@
             matInput 
             placeholder="Email" />
           <mat-icon matSuffix>email</mat-icon>
+
+          @if(submitted && registerForm.controls['email'].errors) {
+            @if(registerForm.controls['email'].errors['required']) {
+              <div class="error">ป้อน email ก่อน</div>
+            }
+            @if(registerForm.controls['email'].errors['email']) {
+              <div class="error">รูปแบบอีเมล์ไม่ถูกต้อง</div>
+            }
+          }
+
         </mat-form-field>
   
         <!-- Password -->
@@ -57,6 +77,16 @@
           >
             <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
           </button>
+
+          @if(submitted && registerForm.controls['password'].errors) {
+            @if(registerForm.controls['password'].errors['required']) {
+              <div class="error">ป้อน password ก่อน</div>
+            }
+            @if(registerForm.controls['password'].errors['minlength']) {
+              <div class="error">ความยาวไม่น้อยกว่า 8 ตัวอักษร</div>
+            }
+          }
+
         </mat-form-field>
         
       </mat-card-content>

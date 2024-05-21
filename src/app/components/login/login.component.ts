@@ -9,7 +9,8 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card'
+import { Meta } from '@angular/platform-browser'
 
 @Component({
     selector: 'app-login',
@@ -36,6 +37,7 @@ import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, Mat
 export class LoginComponent implements OnInit {
   // Form Validation
   loginForm!: FormGroup
+  submitted: boolean = false
 
   // Variables สำหรับรับค่าจากฟอร์ม
   userData = {
@@ -59,28 +61,27 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private formBuilder: FormBuilder,
     private http: UserService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private meta: Meta
 ) {}
 
   ngOnInit() {
+
+    // กำหนด Meta Tag description
+    this.meta.addTag({ name: 'description', content: 'Login page for Stock Management' })
+
     // กำหนดค่าให้กับ Form
     this.loginForm = this.formBuilder.group({
-      username: ['iamsamit', Validators.required],
+      username: ['iamsamit', [Validators.required, Validators.minLength(3)]],
       password: ['Samit@1234', [Validators.required, Validators.minLength(8)]],
     })
   }
 
   // ฟังก์ชัน Submit สำหรับ Login
   submitLogin() {
+    this.submitted = true
     if (this.loginForm.invalid) {
-      this.dialog.open(AlertDialogComponent, {
-        data: {
-          title: 'มีข้อผิดพลาด',
-          icon: 'error',
-          iconColor: 'red',
-          subtitle: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-        },
-      })
+      return
     } else {
       this.userData.username = this.loginForm.value.username
       this.userData.password = this.loginForm.value.password
@@ -115,7 +116,7 @@ export class LoginComponent implements OnInit {
             // delay 2 วินาที
             setTimeout(() => {
               // Redirect ไปหน้า backend
-              window.location.href = '/stock'
+              window.location.href = '/dashboard'
             }, 2000);
 
           }

@@ -37,6 +37,14 @@ export class ProductService {
   constructor(private http: HttpClient) { }
 
   // CRUD Methods ----------------------------------------------------
+  
+    // getAllProducts(): Observable<any> {
+  //   return this.http.get<any>(
+  //     this.apiURL + 'Product', 
+  //     this.httpOptions
+  //   )
+  // }
+
   // Get All Products by parameter (page: number, limit: number, selectedCategory: string, searchQuery: string)
   getAllProducts(page: number, limit: number, selectedCategory: string, searchQuery: string): Observable<any> {
     let url = this.apiURL + 'Product?page=' + page + '&limit=' + limit
@@ -54,12 +62,6 @@ export class ProductService {
       this.httpOptions
     )
   }
-  // getAllProducts(): Observable<any> {
-  //   return this.http.get<any>(
-  //     this.apiURL + 'Product', 
-  //     this.httpOptions
-  //   )
-  // }
 
   // Get Product By ID
   getProductById(id: number): Observable<any> {
@@ -79,9 +81,9 @@ export class ProductService {
   }
 
   // Update Product
-  updateProduct(product: any): Observable<any> {
+  updateProduct(id: number, product: any): Observable<any> {
     return this.http.put<any>(
-      this.apiURL + 'Product/' + product.productID, 
+      this.apiURL + 'Product/' + id,
       product, 
       this.httpOptionsPost
     )

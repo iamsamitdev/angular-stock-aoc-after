@@ -5,7 +5,7 @@ import { StockComponent } from './components/stock/stock.component'
 
 // Auth Guard
 import { authenGuard } from './auth/auth.guard'
-import { StockCreateComponent } from './components/stock-create/stock-create.component'
+import { DashboardComponent } from './components/dashboard/dashboard.component'
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -19,16 +19,19 @@ export const routes: Routes = [
     path: 'register', 
     component: RegisterComponent,
     canActivate: [authenGuard],
+    data: { title: 'Register' }
+  },
+  { 
+    path: 'dashboard', 
+    component: DashboardComponent, 
+    canActivate: [authenGuard],
+    data: { title: 'Dashboard' }
   },
   { 
     path: 'stock', 
     component: StockComponent, 
     canActivate: [authenGuard],
-  },
-  { 
-    path: 'stock/create', 
-    component: StockCreateComponent, 
-    canActivate: [authenGuard],
+    data: { title: 'Stock' }
   },
   { path: '**', redirectTo: 'login' }, // undefined pages
 ]

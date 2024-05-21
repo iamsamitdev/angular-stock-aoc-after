@@ -8,7 +8,8 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card'
+import { Meta } from '@angular/platform-browser'
 
 @Component({
     selector: 'app-register',
@@ -35,6 +36,7 @@ import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, Mat
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup
+  submitted: boolean = false
 
   // Variables สำหรับรับค่าจากฟอร์ม
   userData = {
@@ -50,10 +52,14 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private formBuilder: FormBuilder,
     private http: UserService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private meta: Meta
   ) {}
 
   ngOnInit(): void {
+    // กำหนด Meta Tag description
+    this.meta.addTag({ name: 'description', content: 'Login page for Stock Management' })
+
     // Validate form
     this.registerForm = this.formBuilder.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -64,15 +70,9 @@ export class RegisterComponent implements OnInit {
 
   // ฟังก์ชัน Submit สำหรับ Register
   submitRegister() {
+    this.submitted = true
     if (this.registerForm.invalid) {
-      this.dialog.open(AlertDialogComponent, {
-        data: {
-          title: 'มีข้อผิดพลาด',
-          icon: 'error',
-          iconColor: 'red',
-          subtitle: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-        },
-      })
+      return
     } else {
       this.userData.username = this.registerForm.value.username
       this.userData.email = this.registerForm.value.email

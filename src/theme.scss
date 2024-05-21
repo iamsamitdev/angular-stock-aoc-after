@@ -2,7 +2,7 @@
 @include mat.core();
 
 $typography-config: mat.define-typography-config(
-  $font-family: '"Noto Sans Thai", sans-serif',
+  $font-family: '"Poppins","Noto Sans Thai", sans-serif',
   $headline-1:
     mat.define-typography-level(112px, 112px, 300, $letter-spacing: -0.05em),
   $headline-2:

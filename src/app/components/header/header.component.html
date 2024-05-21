@@ -2,18 +2,17 @@
   <mat-toolbar-row>
     <!-- toggle button -->
     @if (isOpened) {
-      <button mat-icon-button (click)="onToggleSidenav()">
+      <button mat-icon-button (click)="onToggleSidenav()" aria-label="Menu Toggle">
         <mat-icon>menu</mat-icon>
       </button>
     }
-    <a id="home-button" (click)="onToggleSidenav()"
-      ><div class="mat-body1">V. {{ version }}</div></a
-      >
+      
+      <div class="mat-body1">V {{ version }}</div>
 
       <!-- center title -->
       <div style="flex: 0.9"></div>
       <div class="mat-body2">
-        ANGULAR {{ pageName }}
+        Angular {{ pageName }}
       </div>
       <div style="flex: 1"></div>
 
@@ -23,7 +22,7 @@
       </div>
 
       <!-- logout button -->
-      <span>
+      <div class="mt-2">
         <button
           [matMenuTriggerFor]="menu"
           aria-label="Example icon-button with a menu"
@@ -33,7 +32,7 @@
             height="40"
             width="40"
             [src]="'assets/images/samit.jpg'"
-            alt="IT Genius Logo"
+            alt="Samit Koyom"
             class="rounded-full"
             />
         </button>
@@ -51,6 +50,6 @@
             <span>ออกจากระบบ</span>
           </button>
         </mat-menu>
-      </span>
+      </div>
     </mat-toolbar-row>
   </mat-toolbar>

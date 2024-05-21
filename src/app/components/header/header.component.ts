@@ -25,8 +25,8 @@ export class HeaderComponent implements OnInit {
   @Output() sidenavToggle = new EventEmitter<void>();
   @Input() isOpened?: boolean
 
-  pageName: string = 'STOCK'
-  version = '1.0.0'
+  pageName: string = 'Stock'
+  version = '17.3'
 
   constructor(
     private auth: AuthService

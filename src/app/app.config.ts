@@ -8,17 +8,29 @@ import { provideAnimations } from '@angular/platform-browser/animations'
 
 // Forms Module
 import { ReactiveFormsModule } from '@angular/forms'
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts'
+import { IMAGE_CONFIG } from '@angular/common'
 
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(routes),
-        provideClientHydration(),
+        // provideClientHydration(),
         provideHttpClient(),
         provideAnimations(), 
-        provideClientHydration(),
         importProvidersFrom(
             ReactiveFormsModule,
         ),
+        provideCharts(
+            withDefaultRegisterables(),
+        ),
+        {
+            provide: IMAGE_CONFIG,
+            useValue: {
+                defaultImage: 'assets/images/default-image.png',
+                disableImageSizeWarning: true, 
+                disableImageLazyLoadWarning: true
+            },
+        }
     ],
 }
