@@ -72,8 +72,8 @@ export class LoginComponent implements OnInit {
 
     // กำหนดค่าให้กับ Form
     this.loginForm = this.formBuilder.group({
-      username: ['iamsamit', [Validators.required, Validators.minLength(3)]],
-      password: ['Samit@1234', [Validators.required, Validators.minLength(8)]],
+      username: ['', [Validators.required, Validators.minLength(3)]], // iamsamit
+      password: ['', [Validators.required, Validators.minLength(8)]], // Samit@1234
     })
   }
 
