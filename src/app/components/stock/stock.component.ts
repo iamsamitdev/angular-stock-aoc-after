@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, OnInit, ViewChild, inject } from '@angular/core'
 import { Subject } from 'rxjs'
 import { ProductService } from '../../services/product.service'
 import { environment } from '../../../environments/environment'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort, MatSortHeader } from '@angular/material/sort'
+
 import {
   MatTable,
   MatColumnDef,
@@ -17,17 +18,20 @@ import {
   MatRow,
   MatTableDataSource,
 } from '@angular/material/table'
+
 import { DecimalPipe, SlicePipe } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatSuffix } from '@angular/material/form-field'
 import { MatIcon } from '@angular/material/icon'
 import { RouterLink } from '@angular/router'
+
 import {
   MatFabButton,
   MatIconButton,
   MatButton,
 } from '@angular/material/button'
+
 import {
   MatCard,
   MatCardHeader,
@@ -35,6 +39,7 @@ import {
   MatCardSubtitle,
   MatCardContent,
 } from '@angular/material/card'
+
 import { MatDialog } from '@angular/material/dialog'
 import { AlertDialogConfirmComponent } from '../alert-dialog-confirm/alert-dialog-confirm.component'
 import { CreateProductDialogComponent } from '../create-product-dialog/create-product-dialog.component'
@@ -42,10 +47,11 @@ import { EditProductDialogComponent } from '../edit-product-dialog/edit-product-
 
 import { Meta } from '@angular/platform-browser'
 import { DatePipe } from '@angular/common'
+
 // import { provideDatePipe } from '@angular/core'
+
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-
 
 @Component({
   selector: 'app-stock',
@@ -86,18 +92,11 @@ import 'jspdf-autotable'
   providers: [DatePipe]
 })
 export class StockComponent implements OnInit, AfterViewInit {
-  displayedColumns = [
-    'productID',
-    'productPicture',
-    'productName',
-    'unitPrice',
-    'unitInStock',
-    'categoryName',
-    'action',
-  ]
 
-  @ViewChild(MatPaginator, { static: false }) paginator!: MatPaginator
-  @ViewChild(MatSort, { static: false }) sort!: MatSort
+  private http = inject(ProductService)
+  private dialog = inject(MatDialog)
+  private meta = inject(Meta)
+  private datePipe = inject(DatePipe)
 
   // Image URL
   imageUrl = environment.dotnet_api_url_image
@@ -110,12 +109,20 @@ export class StockComponent implements OnInit, AfterViewInit {
   selectedCategory = ''
   searchQuery = ''
 
-  constructor(
-    private http: ProductService, 
-    private dialog: MatDialog,
-    private meta: Meta,
-    private datePipe: DatePipe
-  ) {}
+  // Columns for table
+  displayedColumns = [
+    'productID',
+    'productPicture',
+    'productName',
+    'unitPrice',
+    'unitInStock',
+    'categoryName',
+    'action',
+  ]
+
+  // Pagination
+  @ViewChild(MatPaginator, { static: false }) paginator!: MatPaginator
+  @ViewChild(MatSort, { static: false }) sort!: MatSort
 
   // Method getProducts
   getProducts() {
@@ -137,24 +144,15 @@ export class StockComponent implements OnInit, AfterViewInit {
     })
   }
 
+  // Method ngOnInit
   ngOnInit(): void {
-
     // กำหนด Meta Tag description
     this.meta.addTag({ name: 'description', content: 'Stock page for Stock Management' })
-
+    // ดึงข้อมูลสินค้า
     this.getProducts()
-    this.searchTerm.subscribe((value) => {
-      // this.http.getProductByKeyword(value).subscribe({
-      //   next: (result) => {
-      //     this.dataSource.data = result.products
-      //   },
-      //   error: (error) => {
-      //     console.error(error)
-      //   }
-      // })
-    })
   }
 
+  // Method ngAfterViewInit
   ngAfterViewInit() {
     this.dataSource.sort = this.sort
     this.dataSource.paginator = this.paginator

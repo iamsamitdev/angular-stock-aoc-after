@@ -1,38 +1,34 @@
-import { Component, OnInit, Inject } from '@angular/core'
+import { Component, Inject, inject } from '@angular/core'
 import { MatButton } from '@angular/material/button'
 import { MatIcon } from '@angular/material/icon'
-import { 
-  MatDialogRef, 
-  MAT_DIALOG_DATA, 
-  MatDialogTitle, 
-  MatDialogContent, 
-  MatDialogActions 
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
 } from '@angular/material/dialog'
 
 @Component({
-    selector: 'app-alert-dialog',
-    templateUrl: './alert-dialog.component.html',
-    styleUrl: './alert-dialog.component.scss',
-    standalone: true,
-    imports: [
-      MatIcon, 
-      MatDialogTitle, 
-      MatDialogContent, 
-      MatDialogActions, 
-      MatButton
-    ]
+  selector: 'app-alert-dialog',
+  standalone: true,
+  imports: [
+    MatIcon,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatButton,
+  ],
+  templateUrl: './alert-dialog.component.html',
+  styleUrl: './alert-dialog.component.scss'
 })
-export class AlertDialogComponent implements OnInit {
+export class AlertDialogComponent {
 
-  constructor(
-    public dialogRef: MatDialogRef<AlertDialogComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: any
-  ) { }
+  @Inject(MAT_DIALOG_DATA)
+  public data = inject(MAT_DIALOG_DATA)
+  public dialogRef = inject(MatDialogRef<AlertDialogComponent>)
 
-  ngOnInit(): void {
-  }
-
+  // Close the dialog
   closeDialog(): void {
     this.dialogRef.close(null)
   }

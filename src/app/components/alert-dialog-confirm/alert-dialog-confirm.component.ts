@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -11,25 +11,17 @@ import { MatIcon } from '@angular/material/icon';
   styleUrls: ['./alert-dialog-confirm.component.scss']
 })
 export class AlertDialogConfirmComponent {
-  constructor(
-    public dialogRef: MatDialogRef<AlertDialogConfirmComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      title: string,
-      subtitle: string,
-      message: string,
-      cancelText: string,
-      confirmText: string,
-      icon: string,
-      iconColor: string,
-      confirmAction?: () => void
-    }
-  ) { }
 
+  @Inject(MAT_DIALOG_DATA)
+  public data = inject(MAT_DIALOG_DATA)
+  public dialogRef = inject(MatDialogRef<AlertDialogConfirmComponent>)
+
+  // Close the dialog
   closeDialog(): void {
     this.dialogRef.close(false); // Close without confirmation
   }
 
+  // Confirm action
   confirmAction(): void {
     if (this.data.confirmAction) {
       this.data.confirmAction(); // Execute provided action

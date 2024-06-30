@@ -1,4 +1,4 @@
-import { Component, EventEmitter } from '@angular/core'
+import { Component, EventEmitter, inject } from '@angular/core'
 import {
   FormGroup,
   FormBuilder,
@@ -6,6 +6,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms'
+
 import { MatButton } from '@angular/material/button'
 import { MatIcon } from '@angular/material/icon'
 
@@ -17,6 +18,7 @@ import {
   MatCardTitle,
   MatCardContent,
 } from '@angular/material/card'
+
 import { MatSelectModule } from '@angular/material/select'
 import { ProductService } from '../../services/product.service'
 import { MatDialog, MatDialogContent, MatDialogRef } from '@angular/material/dialog'
@@ -45,6 +47,11 @@ import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
 })
 export class CreateProductDialogComponent {
 
+  private formBuilder = inject(FormBuilder)
+  public dialogRef = inject(MatDialogRef<CreateProductDialogComponent>)
+  private http = inject(ProductService)
+  private dialog = inject(MatDialog)
+
   formProduct!: FormGroup
   submitted: boolean = false
   imageURL = null
@@ -53,11 +60,12 @@ export class CreateProductDialogComponent {
   // Character count
   remainingCharacters = 50
 
+  // ฟังก์ชันสำหรับนับจำนวนตัวอักษรที่เหลือ
   countCharacters() {
     this.remainingCharacters = 50 - this.formProduct.value.product_name.length
   }
 
-  // Category
+  // สร้างตัวแปรสำหรับเก็บข้อมูลประเภทสินค้า
   categories = [
     { value: '1', viewValue: 'Mobile' },
     { value: '2', viewValue: 'Tablet' },
@@ -86,6 +94,7 @@ export class CreateProductDialogComponent {
     input.value = ''
   }
 
+  // ฟังก์ชันสำหรับเริ่มต้น form
   initForm() {
     // format date "2024-04-26T00:00:00"
     const date = new Date()
@@ -108,18 +117,13 @@ export class CreateProductDialogComponent {
     })
   }
 
-  constructor(
-    private formBuilder: FormBuilder,
-    public dialogRef: MatDialogRef<CreateProductDialogComponent>,
-    private http: ProductService,
-    private dialog: MatDialog,    
-  ) {}
-
+  // Method ngOnInit() จะถูกเรียกเมื่อ component ถูกสร้างขึ้น
   ngOnInit() {
     this.initForm()
     this.remainingCharacters = 50
   }
 
+  // Method onSubmit() จะถูกเรียกเมื่อมีการกดปุ่ม Submit
   onSubmit() {
     this.submitted = true
     if (this.formProduct.invalid) {
@@ -171,6 +175,7 @@ export class CreateProductDialogComponent {
     }
   }
 
+  // Method closeDialog() จะถูกเรียกเมื่อมีการกดปุ่ม Cancel
   closeDialog(): void {
     this.dialogRef.close(false)
   }
@@ -178,6 +183,7 @@ export class CreateProductDialogComponent {
   // Emit event to parent component
   productCreated = new EventEmitter<boolean>()
 
+  // Method onCreateSuccess() จะถูกเรียกเมื่อสร้างสินค้าสำเร็จ
   onCreateSuccess() {
     this.productCreated.emit(true)
   }

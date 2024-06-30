@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core'
+import { Component, ViewChild, inject } from '@angular/core'
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router'
 import { HeaderComponent } from './components/header/header.component'
 import { MenuComponent } from './components/menu/menu.component'
@@ -20,28 +20,31 @@ import { Title } from '@angular/platform-browser'
     ]
 })
 export class AppComponent {
+
+  private router = inject(Router)
+  private titleService = inject(Title)
+
   isExpanded = true
   isLoggedIn = false
 
   @ViewChild('sidenav', { static: true }) sidenav: any
 
-  constructor(
-    private router: Router,
-    private titleService: Title
-  ) {
+  ngOnInit(): void {
+
     // Check if the user is logged in
     this.isLoggedIn = localStorage.getItem('LoggedInToken') ? true : false
-  }
 
-  ngOnInit(): void {
+    // Update the page title when the route changes
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         const url = event.url
         this.updatePageTitle(url)
       }
     })
+
   }
 
+  // Method to update the page title
   private updatePageTitle(url: string) {
     const routeObj = this.router.config.find((route) => ("/" + route.path) === url)
     let routeData = routeObj?.data
@@ -52,7 +55,9 @@ export class AppComponent {
     }
   }
 
+  // Method to toggle the sidebar
   toggleSideBar() {
     this.sidenav.toggle();
   }
+
 }

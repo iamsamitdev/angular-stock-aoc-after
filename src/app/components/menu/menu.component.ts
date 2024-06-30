@@ -18,8 +18,6 @@ export class MenuComponent implements OnInit {
   @Input() isOpened?: boolean;
   @Output() sidenavToggle = new EventEmitter<void>();
 
-  constructor() {}
-
   ngOnInit() {}
 
   onToggleSidenav() {

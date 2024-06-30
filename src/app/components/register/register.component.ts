@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { UserService } from '../../services/user.service'
@@ -35,6 +35,13 @@ import { Meta } from '@angular/platform-browser'
     ],
 })
 export class RegisterComponent implements OnInit {
+
+  private meta = inject(Meta)
+  private http = inject(UserService)
+  private router = inject(Router)
+  private formBuilder = inject(FormBuilder)
+  private dialog = inject(MatDialog)
+
   registerForm!: FormGroup
   submitted: boolean = false
 
@@ -47,14 +54,6 @@ export class RegisterComponent implements OnInit {
 
   // สำหรับซ่อนแสดง password
   hide = true
-
-  constructor(
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private http: UserService,
-    private dialog: MatDialog,
-    private meta: Meta
-  ) {}
 
   ngOnInit(): void {
     // กำหนด Meta Tag description

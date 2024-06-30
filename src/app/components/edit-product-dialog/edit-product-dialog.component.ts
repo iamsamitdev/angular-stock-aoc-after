@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Inject } from '@angular/core'
+import { Component, EventEmitter, Inject, inject } from '@angular/core'
 import { environment } from '../../../environments/environment'
+
 import {
   FormGroup,
   FormBuilder,
@@ -7,17 +8,20 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms'
+
 import { MatButton } from '@angular/material/button'
 import { MatIcon } from '@angular/material/icon'
 
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel } from '@angular/material/form-field'
+
 import {
   MatCard,
   MatCardHeader,
   MatCardTitle,
   MatCardContent,
 } from '@angular/material/card'
+
 import { MatSelectModule } from '@angular/material/select'
 import { ProductService } from '../../services/product.service'
 import { MatDialogContent, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
@@ -46,6 +50,13 @@ import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
 })
 export class EditProductDialogComponent {
 
+  private formBuilder = inject(FormBuilder)
+  public dialogRef = inject(MatDialogRef<EditProductDialogComponent>)
+  private http = inject(ProductService)
+  private dialog = inject(MatDialog)
+  @Inject(MAT_DIALOG_DATA) 
+  public editData = inject(MAT_DIALOG_DATA)
+
   formProduct!: FormGroup
   submitted: boolean = false
   imageURL = null
@@ -58,11 +69,12 @@ export class EditProductDialogComponent {
   // Character count
   remainingCharacters = 50
 
+  // ฟังก์ชันนับจำนวนตัวอักษรที่เหลือ
   countCharacters() {
     this.remainingCharacters = 50 - this.formProduct.value.product_name.length
   }
 
-  // Category
+  // สร้างตัวแปรสำหรับเก็บข้อมูลประเภทสินค้า
   categories = [
     { value: 1, viewValue: 'Mobile' },
     { value: 2, viewValue: 'Tablet' },
@@ -91,6 +103,7 @@ export class EditProductDialogComponent {
     input.value = ''
   }
 
+  // ฟังก์ชันสำหรับกำหนดค่าเริ่มต้นให้กับฟอร์ม
   initForm() {
     // format date "2024-04-26T00:00:00"
     const date = new Date()
@@ -127,19 +140,13 @@ export class EditProductDialogComponent {
 
   }
 
-  constructor(
-    private formBuilder: FormBuilder,
-    public dialogRef: MatDialogRef<EditProductDialogComponent>,
-    private http: ProductService,
-    private dialog: MatDialog,
-    @Inject(MAT_DIALOG_DATA) public editData: any
-  ) {}
-
+  // ฟังก์ชัน ngOnInit จะถูกเรียกเมื่อ component ถูกสร้างขึ้น
   ngOnInit() {
     this.initForm()
     this.remainingCharacters = 50
   }
 
+  // ฟังก์ชันสำหรับส่งข้อมูลไปบันทึก
   onSubmit() {
     console.log('Submit form')
 
@@ -192,14 +199,16 @@ export class EditProductDialogComponent {
     
   }
 
+  // ฟังก์ชันสำหรับปิด dialog
   closeDialog(): void {
     console.log('Close dialog')
     this.dialogRef.close(false)
   }
 
-  // Emit event to parent component
+  // ฟังก์ชันสำหรับส่ง event ไปยัง parent component
   productUpdated = new EventEmitter<boolean>()
 
+  // ฟังก์ชัน onCreateSuccess จะถูกเรียกเมื่อสร้างสินค้าสำเร็จ
   onUpdatedSuccess() {
     this.productUpdated.emit(true)
   }

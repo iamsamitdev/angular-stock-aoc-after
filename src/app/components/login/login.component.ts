@@ -1,16 +1,22 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms'
-import { UserService } from '../../services/user.service'
-import { MatDialog } from '@angular/material/dialog'
-import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
-import { AuthService } from '../../services/auth.service'
-import { MatIconButton, MatButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
+import { MatIconButton, MatButton } from '@angular/material/button'
+import { MatIcon } from '@angular/material/icon'
+import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
 import { MatCard, MatCardImage, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card'
+import { MatDialog } from '@angular/material/dialog'
 import { Meta } from '@angular/platform-browser'
+
+// Import user service
+import { UserService } from '../../services/user.service'
+
+// Import AuthService
+import { AuthService } from '../../services/auth.service'
+
+// Import AlertDialogComponent
+import { AlertDialogComponent } from '../alert-dialog/alert-dialog.component'
 
 @Component({
     selector: 'app-login',
@@ -35,6 +41,14 @@ import { Meta } from '@angular/platform-browser'
     ],
 })
 export class LoginComponent implements OnInit {
+
+  private meta = inject(Meta)
+  private http = inject(UserService)
+  private router = inject(Router)
+  private formBuilder = inject(FormBuilder)
+  private auth = inject(AuthService)
+  private dialog = inject(MatDialog)
+
   // Form Validation
   loginForm!: FormGroup
   submitted: boolean = false
@@ -56,15 +70,6 @@ export class LoginComponent implements OnInit {
   // สำหรับซ่อนแสดง password
   hide = true
 
-  constructor(
-    private auth: AuthService,
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private http: UserService,
-    private dialog: MatDialog,
-    private meta: Meta
-) {}
-
   ngOnInit() {
 
     // กำหนด Meta Tag description
@@ -75,6 +80,11 @@ export class LoginComponent implements OnInit {
       username: ['', [Validators.required, Validators.minLength(3)]], // iamsamit
       password: ['', [Validators.required, Validators.minLength(8)]], // Samit@1234
     })
+
+    // เช็คว่าถ้า Login อยู่แล้วให้ Redirect ไปหน้า Dashboard
+    if (this.auth.isLoggedIn()) {
+      window.location.href = '/dashboard'
+    }
   }
 
   // ฟังก์ชัน Submit สำหรับ Login
@@ -86,21 +96,26 @@ export class LoginComponent implements OnInit {
       this.userData.username = this.loginForm.value.username
       this.userData.password = this.loginForm.value.password
 
+      // console.log(this.userData)
+
       // เรียกใช้งาน Service สำหรับ Login
       this.http.Login(this.userData).subscribe({
-        
         next: (data: any) => {
-          if (data.token != null) {
+          // console.log(data)
+          if(data.token != null){
 
+            // show dialog
             this.dialog.open(AlertDialogComponent, {
               data: {
-                title: 'Login Success',
+                title: 'เข้าสู่ระบบสำเร็จ',
                 icon: 'check_circle',
                 iconColor: 'green',
-                subtitle: 'Welcome to our website.',
+                subtitle: 'กำลังเปลี่ยนหน้าไปหน้าหลัก...',
               },
+              disableClose: true,
             })
-
+            
+            // เก็บค่าลงตัวแปร userLogin
             this.userLogin = {
               "username": data.userData.userName,
               "email": data.userData.email,
@@ -108,20 +123,18 @@ export class LoginComponent implements OnInit {
               "token": data.token
             }
 
-            // console.log(this.userLogin)
-
-            // บันทึกข้อมูลลง local storage
+            // เก็บข้อมูลผู้ใช้งานลง cookie
             this.auth.setUser(this.userLogin)
 
+            // ส่งไปหน้า Home
             // delay 2 วินาที
             setTimeout(() => {
               // Redirect ไปหน้า backend
               window.location.href = '/dashboard'
-            }, 2000);
+            }, 2000)
 
           }
         },
-
         error: (error) => {
           console.log(error)
           this.dialog.open(AlertDialogComponent, {
@@ -131,10 +144,11 @@ export class LoginComponent implements OnInit {
               iconColor: 'red',
               subtitle: 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง',
             },
+            disableClose: true,
           })
-        },
-
+        }
       })
+
     }
   }
 
