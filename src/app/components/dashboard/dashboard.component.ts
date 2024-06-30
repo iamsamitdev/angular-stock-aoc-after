@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 
 // Ng2 Charts
 import { BaseChartDirective } from 'ng2-charts'
@@ -24,11 +24,9 @@ import { Meta } from '@angular/platform-browser'
 })
 export class DashboardComponent {
 
-  title = 'Sales Dashboard'
+  private meta = inject(Meta)
 
-  constructor(
-    private meta: Meta
-  ) {}
+  title = 'Sales Dashboard'
 
   ngOnInit() {
     this.meta.addTag({ name: 'description', content: 'Dashboard for Stock Management' })
